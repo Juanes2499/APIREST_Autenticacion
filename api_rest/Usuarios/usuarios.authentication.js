@@ -1,4 +1,4 @@
-const userRouter = require('./user.router');
+const userRouter = require('./usuarios.router');
 
 const express = require('express');
 const userAuth = express();

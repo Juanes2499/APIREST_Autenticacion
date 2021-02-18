@@ -1,4 +1,5 @@
 const pool = require("../../config/database");
+const consultaDinamica = require("../../shared/consultaDinamica");
 
 module.exports={
     crear_Usuario: (data, callback)=>{
@@ -6,22 +7,32 @@ module.exports={
         data.tipo_doc_id = data.tipo_doc_id.toUpperCase();
         data.email = data.email.toLowerCase();
 
+        const queryConsultarExistenciaUsuario = `
+            SELECT * FROM USUARIOS
+            WHERE (TIPO_DOC_ID = ? AND NUMERO_DOC_ID = ?) OR EMAIL = ? 
+        `;
+
         pool.query(
-            `
-            SELECT * FROM USER
-                WHERE (TIPO_DOC_ID = ? AND NUMERO_DOC_ID = ?) OR EMAIL = ? `,
+            queryConsultarExistenciaUsuario,
             [data.tipo_doc_id, data.numero_doc_id, data.email],
             (error, result) => {
+
                 if(result.length > 0){
+
                     return callback(`The register with email: ${data.email} was created`, null, false);
+
                 } else if (result.length === 0){
-                    pool.query(
-                        `
+
+                    const queryCrearUsuario = `
                         INSERT 
-                            INTO USER 
-                            (NOMBRES, APELLIDOS, TIPO_DOC_ID, NUMERO_DOC_ID, EMAIL, PASSWORD, FECHA_CREACION, HORA_CREACION)
+                            INTO USUARIOS 
+                            (ID_USUARIO, NOMBRES, APELLIDOS, TIPO_DOC_ID, NUMERO_DOC_ID, EMAIL, PASSWORD, FECHA_CREACION, HORA_CREACION)
                         VALUES 
-                            (?,?,?,?,?,?, CURDATE(), CURTIME())`,
+                            (UUID(), ?,?,?,?,?,?, CURDATE(), CURTIME())
+                    `;
+
+                    pool.query(
+                        queryCrearUsuario,
                         [
                             data.nombres,
                             data.apellidos,
@@ -32,67 +43,60 @@ module.exports={
                         ],
                         (error, result) =>{
                             if(error){
-                                return callback(`The register with email: ${data.email} was created`, null, false)
+                                return callback(`The register with email: ${data.email} could not be created`, null, false)
                             }
-                            return callback(null, result, true)
+                            return callback(null, null, true)
                         }
                     );
                 }
             }
         )
     },
-    consultar_Usuarios: callback =>{
-        pool.query(
-            `SELECT * FROM USER`,
-            [],
-            (error, result, fields) =>{
-                if(error){
-                    return callback(error, null, false);
-                }
-                return callback(null, result, true);
-            }
-        );
-    },
-    consultar_usuarios_byID: (data, callback) => {
-        
-        const queryConsultarUsuarioByID = `
-            SELECT 
-                * 
-            FROM USER 
-            WHERE 
-                ID_USER = ?`;
+    consultar_Usuarios: (data, callback) =>{
 
-        pool.query(
-            queryConsultarUsuarioByID,
-            [data.id_user],
-            (error, result)=>{
-                if(result.length === 0){
-                    return callback(`The user with ID_USER ${data.id_user} does not exist `, null, false);
-                }
-                return callback(null, result, true);
-            }
-        );
-    },
-    consultar_usuarios_byEmail: (data, callback) => {
-
-        const queryConsultarUsuarioByEmail = `
-            SELECT 
-                *
-            FROM USER U 
-            WHERE 
-                U.EMAIL LIKE '%${data.email}%'
+        const queryBaseConsultarUsuario = `
+            SELECT
+                ID_USUARIO,
+                NOMBRES,
+                APELLIDOS,
+                TIPO_DOC_ID,
+                NUMERO_DOC_ID,
+                EMAIL,
+                FECHA_CREACION,
+                HORA_CREACION,
+                FECHA_ACTUALIZACION,
+                HORA_ACTUALIZACION
+            FROM USUARIOS
         `;
 
+        const queryConsultarUsuarios = consultaDinamica(
+            queryBaseConsultarUsuario,
+            data.seleccionar,
+            data.condicion,
+            data.agrupar,
+            data.ordenar
+        );
+
+        if(queryConsultarUsuarios.query == null && queryConsultarUsuarios.error === true){
+            return callback(queryConsultarUsuarios.message, null, false);
+        }
+
         pool.query(
-            queryConsultarUsuarioByEmail,
+            queryConsultarUsuarios.query,
             [],
-            (error, result) => {
-                if(result.length === 0){
-                    return callback(`The user with email: ${data.email} does not exist `, null, false);
+            (error, result) =>{
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
                 }
+
+                if(result.length === 0){
+                    return callback(`There is/are no record(s) for users module with the parameter(s) set`, null, false);
+                }
+
                 return callback(null, result, true);
             }
-        )
+        );
     },
     actualizar_usuario_byId: (data, callBack) => {
 
@@ -102,21 +106,26 @@ module.exports={
         const queryConsutarExistenciaUsuarioByID = `
             SELECT 
                 * 
-            FROM USER 
+            FROM USUARIOS 
             WHERE 
-                ID_USER = ?
+                ID_USUARIO = ?
         `;
 
         pool.query(
             queryConsutarExistenciaUsuarioByID,
-            [data.id_user],
+            [data.id_usuario],
             (error, result) => {
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+
                 if(result.length === 0){
-                    return callback(`The user with ID_USER ${data.id_user} does not exist `, null, false);
+                    return callback(`The user with ID_USUARIO ${data.id_usuario} does not exist `, null, false);
                 }else if (result.length > 0){
 
                     const queryActualizarUsuarioByID = `
-                        UPDATE USER
+                        UPDATE USUARIOS
                             SET NOMBRES = ?,
                                 APELLIDOS = ?,
                                 TIPO_DOC_ID = ?,
@@ -125,15 +134,17 @@ module.exports={
                                 PASSWORD = ?,
                                 FECHA_ACTUALIZACION = CURDATE(),
                                 HORA_ACTUALIZACION = CURTIME()
-                            WHERE ID_USER = ?`;
+                            WHERE ID_USUARIO = ?`;
             
                     pool.query(
                         queryActualizarUsuarioByID,
-                      [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.id_user],
+                      [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.id_usuario],
                       (error, result) => {
+
                         if (error) {
-                            return callback(`The register with ID_USER: ${data.id_user} could not be updated`, null, false);
+                            return callback(`The register with ID_USER: ${data.id_usuario} could not be updated`, null, false);
                         }
+
                         return callBack(null, null, true);
                       }
                     )
@@ -146,30 +157,39 @@ module.exports={
         const queryConsutarExistenciaUsuarioByID = `
             SELECT 
                 * 
-            FROM USER 
-            WHERE 
-                ID_USER = ?
+            FROM USUARIOS 
+            WHERE ID_USUARIO = ?
         `;
 
         pool.query(
             queryConsutarExistenciaUsuarioByID,
-            [data.id_user],
+            [data.id_usuario],
             (error, result) => {
+
+                if (error) {
+                    return callback(`The register with ID_USER: ${data.id_usuario} could not be updated`, null, false);
+                }
+
                 if(result.length === 0){
-                    return callback(`The user with ID_USER ${data.id_user} does not exist `, null, false);
+
+                    return callback(`The user with ID_USER ${data.id_usuario} does not exist `, null, false);
+
                 }else if (result.length > 0){
 
                     const queryEliminarUsuarioById = `
-                        DELETE FROM USER WHERE ID_USER = ?
+                        DELETE FROM USUARIOS WHERE ID_USUARIO = ?
                     `;
+
                     pool.query(
                         queryEliminarUsuarioById,
-                        [data.id_user],
+                        [data.id_usuario],
                         (error, result) => {
-                        if (error) {
-                            return callback(`The register with ID_USER: ${data.id_user} could not be deleted`, null, false);
-                        }
-                        return callback(null, null, true);
+
+                            if (error) {
+                                return callback(`The register with ID_USUARIO: ${data.id_usuario} could not be deleted`, null, false);
+                            }
+
+                            return callback(null, null, true);
                         }
                     );
                 }

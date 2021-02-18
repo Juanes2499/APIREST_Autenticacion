@@ -6,15 +6,42 @@ const {
     actualizar_usuario_byId,
     eliminar_usuario_byId,
     autenticar_ByEmail,
-} = require('./user.service');
+} = require('./usuarios.service');
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
-require("dotenv").config()
+const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
     crearUsuario: (req,res)=>{
 
         const body = req.body;
+
+        const parametrosEndpoint = {
+            nombres: true,
+            apellidos: true,
+            tipo_doc_id: true,
+            numero_doc_id: true,   
+            email: true,  
+            password: true,  
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+        
         const salt = genSaltSync(10);
         
         const encriptPass = new Promise((resolve, reject)=>{
@@ -40,61 +67,45 @@ module.exports = {
             }
             return res.status(201).json({
                 success: state,
-                statusCode:201
+                statusCode:201,
+                message: `The register with email: ${body.email} was successfully created`,
               });
         });
     },
     consultarUsuarios: (req, res) => {
-        consultar_Usuarios((err, result, state) => {
-            if (err) {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            seleccionar: true,
+            condicion: true,
+            agrupar: true,
+            ordenar: true,   
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        consultar_Usuarios(body, (err, result, state) => {
+            if (state === false) {
                 console.log(err);
                 return res.status(500).json({
                     success:state,
-                    message: "Database get error - error in consultarUsuarios"
-                })
-            }
-
-            result.forEach(element => {
-                element.PASSWORD = undefined;
-            });
-
-            return res.status(200).json({
-                success: state,
-                statusCode:200,
-                data: result
-            });
-        });
-    },
-    consultarUsuariosByID: (req, res)=>{
-        const body = req.body;
-        consultar_usuarios_byID(body, (err, result, state) => {
-            if (err) {
-                return res.status(500).json({
-                    success:state,
-                    message: "Database get error - error in consultarUsuariosByID",
-                    return: err
-                })
-            }
-
-            result.forEach(element => {
-                element.PASSWORD = undefined;
-            });
-
-            return res.status(200).json({
-                success: state,
-                statusCode:200,
-                data: result
-            });
-        });
-    },
-    consultarUsuariosByEmail: (req, res)=>{
-        const body = req.body;
-
-        consultar_usuarios_byEmail(body, (err, result, state) => {
-            if (err) {
-                return res.status(500).json({
-                    success:state,
-                    message: "Database get error - error in consultarUsuariosByEmail",
+                    message: "Database get error - error in consultarUsuarios",
                     return: err
                 })
             }
@@ -111,7 +122,36 @@ module.exports = {
         });
     },
     actualizarUsuarioById: (req, res) => {
+        
         const body = req.body;
+
+        const parametrosEndpoint = {
+            id_usuario: true,
+            nombres: true,
+            apellidos: true,
+            tipo_doc_id: true,
+            numero_doc_id: true,   
+            email: true,  
+            password: true,  
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
         const salt = genSaltSync(10);
         
         const encriptPass = new Promise((resolve, reject)=>{
@@ -124,7 +164,8 @@ module.exports = {
                 console.log(err);
             });
 
-            actualizar_usuario_byId(body, (err, result, state) => {
+        actualizar_usuario_byId(body, (err, result, state) => {
+
             if(state === false){
                 console.log(err);
                 return res.status(403).json({
@@ -134,16 +175,41 @@ module.exports = {
                     return: err
                 });
             }
+
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The user with ID_USER: ${body.id_user} was successfully updated`
+                message: `The user with ID_USUARIO: ${body.id_usuario} was successfully updated`
             });
         });
     },
     eliminarUsuarioById: (req, res) => {
+
         const body = req.body;
+
+        const parametrosEndpoint = {
+            id_usuario: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
         eliminar_usuario_byId(body, (err, result, state) => {
+
             if(state === false){
                 return res.status(403).json({
                     success: state, 
@@ -152,10 +218,11 @@ module.exports = {
                     return: err
                 });
             }
+
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The user with ID_USER: ${body.id_user} was successfully deleted`
+                message: `The user with ID_USUARIO: ${body.id_usuario} was successfully deleted`
             });
         });
     },
