@@ -10,12 +10,14 @@ if(auth === "true"){
     const login = require('../Usuarios/login.router');
     const userAuth = require('../Usuarios/usuarios.authentication');
     const microservicoAuth = require('../Microservicios/microservicio.authentication');
+    const moduloAuth = require('../Modulos/modulo.authentication');
     const rolesAuth = require('../Roles/roles.authentication');
     const configuracionRolesAuth = require('../configuracionRoles/configuracionRoles.authentication');
     
     generalRouters.use("/login", login);
     generalRouters.use("/usuarios", userAuth);
     generalRouters.use("/microservicios", microservicoAuth);
+    generalRouters.use("/modulos", moduloAuth);
     generalRouters.use("/roles", rolesAuth);
     generalRouters.use("/configuracionRol", configuracionRolesAuth);
 
@@ -26,12 +28,14 @@ if(auth === "true"){
     const login = require('../Usuarios/login.router');
     const userRouter = require('../Usuarios/usuarios.router');
     const microservicoRouter = require('../Microservicios/microservicio.router');
+    const moduloRouter = require('../Modulos/modulo.router');
     const rolesRouter = require('../Roles/roles.router');
     const configuracionRolesRouter = require('../configuracionRoles/configuracionRoles.router');
     
     generalRouters.use("/login", login);
     generalRouters.use("/usuarios", userRouter);
     generalRouters.use("/microservicios", microservicoRouter);
+    generalRouters.use("/modulos", moduloRouter)
     generalRouters.use("/roles", rolesRouter);
     generalRouters.use("/configuracionRol", configuracionRolesRouter);
 }

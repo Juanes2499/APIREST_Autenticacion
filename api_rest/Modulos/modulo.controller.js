@@ -1,20 +1,20 @@
 const {
-    crear_microservicio,
-    consultar_microservicioDinamico,
-    actualizar_microservicio_ByID,
-    eliminar_microservicio_byId
-} = require('./microservicio.service');
+    crear_modulo,
+    consultar_moduloDinamico,
+    actualizar_modulo_ByID,
+    eliminar_modulo_byId
+} = require('./modulo.service');
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
-    crearMicroservicio: (req,res)=>{
+    crearModulo: (req,res)=>{
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            nombre_microservicio: true,
+            nombre_modulo: true,
             detalles: true,
-            url_microservicio: true,
+            url_modulo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -34,24 +34,25 @@ module.exports = {
             })
         }
         
-        crear_microservicio(body, (err, result, state)=>{
-            if(err){
+        crear_modulo(body, (err, result, state)=>{
+            if(state === false){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - crearMicroservicio",
+                    message: "Database create error - crearModulo",
                     return: err
                 })
             }
+
             return res.status(201).json({
                 success: state,
                 statusCode:201,
-                message: `The register with NOMBRE_MICROSERVICIO: ${body.nombre_microservicio} was successfully created`,
+                message: `The register with NOMBRE_MODULO: ${body.nombre_modulo} was successfully created`,
               });
         });
     },
-    consultarMicroservicioDinamico: (req, res) => {
+    consultarModuloDinamico: (req, res) => {
 
         const body = req.body;
 
@@ -79,12 +80,12 @@ module.exports = {
             })
         }
 
-        consultar_microservicioDinamico(body, (err, result, state) => {
+        consultar_moduloDinamico(body, (err, result, state) => {
             if (state === false) {
                 console.log(err);
                 return res.status(500).json({
                     success:state,
-                    message: "Database get error - error in consultarMicroservicerDinamico",
+                    message: "Database get error - error in consultarModuloDinamico",
                     return: err
                 })
             }
@@ -96,15 +97,15 @@ module.exports = {
             });
         });
     },
-    actualizarMicroservicioByID: (req, res) => {
+    actualizarModuloByID: (req, res) => {
         
         const body = req.body;
 
         const parametrosEndpoint = {
-            id_microservicio: true,
-            nombre_microservicio: true,
+            id_modulo: true,
+            nombre_modulo: true,
             detalles: true,
-            url_microservicio: true,
+            url_modulo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -124,14 +125,14 @@ module.exports = {
             })
         }
 
-        actualizar_microservicio_ByID(body, (err, result, state) => {
+        actualizar_modulo_ByID(body, (err, result, state) => {
 
             if(state === false){
                 console.log(err);
                 return res.status(403).json({
                     success: state, 
                     statusCode: 403,
-                    message: "Database put error - error in actualizarMicroservicioByID",
+                    message: "Database put error - error in actualizarModuloByID",
                     return: err
                 });
             }
@@ -139,16 +140,16 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_MICROSERVICIO: ${body.id_microservicio} was successfully updated`
+                message: `The module with ID_MODULO: ${body.id_modulo} was successfully updated`
             });
         });
     },
-    eliminarMicroservicioById: (req, res) => {
+    eliminarModuloById: (req, res) => {
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            id_microservicio: true,
+            id_modulo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -168,13 +169,13 @@ module.exports = {
             })
         }
 
-        eliminar_microservicio_byId(body, (err, result, state) => {
+        eliminar_modulo_byId(body, (err, result, state) => {
 
             if(state === false){
                 return res.status(403).json({
                     success: state, 
                     statusCode: 403,
-                    message: "Database delete error - error in eliminarMicroservicioById",
+                    message: "Database delete error - error in eliminarModuloById",
                     return: err
                 });
             }
@@ -182,7 +183,7 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_MICROSERVICIO: ${body.id_microservicio} was successfully deleted`
+                message: `The module with ID_MODULO: ${body.id_modulo} was successfully deleted`
             });
         });
     }

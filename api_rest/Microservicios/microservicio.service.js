@@ -128,7 +128,7 @@ module.exports = {
 
                 }else if(result.length > 0){
 
-                    //Verificar si al actualizar no existe una variable igual
+                    //Verificar si al actualizar no existe un mecroservicio igual
                     const queryComprobarExistenciaMicroservicioAntesActualizar = `
                         SELECT * FROM MICROSERVICIOS
                             WHERE NOMBRE_MICROSERVICIO = ? 
@@ -146,7 +146,7 @@ module.exports = {
                             const existenciaMicroservicioJson = JSON.parse(JSON.stringify(result))[0] ? JSON.parse(JSON.stringify(result))[0] : {ID_MICROSERVICIO: data.id_microservicio} ;
 
                             if(existenciaMicroservicioJson.ID_MICROSERVICIO != data.id_microservicio){
-                                return callback(`The microservice with ID_MICROSERVICIO: ${data.id_microservicio} and NOMBRE_MICROSERVICIO: ${data.nombre_microservicio} already exist in the microservice register with NOMBRE_MICROSERVICIO: ${existenciaMicroservicioJson.ID_MICROSERVICIO}`, null, false);
+                                return callback(`The microservice with ID_MICROSERVICIO: ${data.id_microservicio} and NOMBRE_MICROSERVICIO: ${data.nombre_microservicio} already exist in the microservice register with ID_MICROSERVICIO: ${existenciaMicroservicioJson.ID_MICROSERVICIO}`, null, false);
                             }else if(existenciaMicroservicioJson.ID_MICROSERVICIO === data.id_microservicio){
 
                                 const queryActualizarMicroservicio = `
@@ -166,7 +166,7 @@ module.exports = {
                                     (error, result) => {
 
                                         if(error){
-                                            return callback(`The register with ID_VARIABLE: ${data.id_variable} could not be updated`, '02VNS_03PUT_PUT06', null, false);
+                                            return callback(`The register with ID_MICROSERVICIO: ${data.id_microservicio} could not be updated`, null, false);
                                         }
 
                                         return callback(null, null, true);
