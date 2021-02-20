@@ -1,14 +1,14 @@
 const rolesRouter = require('./roles.router');
 
 const express = require('express');
-const rolesAuth = express();
+const userAuth = express();
 
 const auth = require('../../shared/authentication');
 
-rolesAuth.use("/", (req, res)=>{
+userAuth.use("/", (req, res)=>{
     auth(req, res)
         .then(() => {
-            
+
             if(req.decoded === undefined){
                 req.error = ({
                     success:false,
@@ -17,21 +17,22 @@ rolesAuth.use("/", (req, res)=>{
                 })
                 return req;
             }else{
-                const rolMaster = req.decoded.ROL_MASTER;
-                const rolRoles = req.decoded.ROL_ROLES;
-    
-                if(rolMaster || rolRoles ){
+
+                const moduloPermiso = req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_ROLES;
+                
+                if(moduloPermiso){
                     rolesRouter(req,res);
                 }
+
                 else{
                     return res.status(500).json({
                         success:false,
                         statusCode:500,
-                        message: "The User has not access to Roles"
+                        message: "The User has not access to microservices module"
                     })
                 }
             }
         })
 });
 
-module.exports = rolesAuth;
+module.exports = userAuth;

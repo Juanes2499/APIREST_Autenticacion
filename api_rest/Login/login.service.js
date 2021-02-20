@@ -73,7 +73,7 @@ module.exports ={
 
                             if(result.length === 0) {
 
-                                LoginJson[`ROLES`] = `The user with email: ${data.email} does not have any role asigned`
+                                LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any role asigned`
 
                                 return callback(null, LoginJson, true); 
 
@@ -91,9 +91,9 @@ module.exports ={
 
                                 let arrayMicroserviciosSinDuplicados = arrayMicroservicios.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
 
-                                arrayMicroserviciosSinDuplicados.forEach(x => {
+                                let permisosMicroservicio = {};
 
-                                    let permisosMicroservicio = {};
+                                arrayMicroserviciosSinDuplicados.forEach(x => {
                                 
                                     let modulosFiltradosPorMicroservicio = resultConfiguracionUsuarioToJson.filter(i => {
                                         if (i.NOMBRE_MICROSERVICIO === x){
@@ -109,7 +109,7 @@ module.exports ={
                                     permisosMicroservicio[`MS_${x}`] = permisosModulos;
 
                                     //LoginJson[`MS_${x}`] = permisosModulos;
-                                    LoginJson['PERSMISOS'] = permisosMicroservicio;
+                                    LoginJson['PERMISOS'] = permisosMicroservicio;
                                 
                                 })
                                 

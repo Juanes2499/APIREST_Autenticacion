@@ -54,8 +54,7 @@ module.exports ={
                     success: state,
                     statusCode:200,
                     message: "login successfully",
-                    nombre: results.NOMBRES,
-                    apellido: results.APELLIDOS,
+                    email: results.EMAIL,
                     token: jsontoken,
                     expedicion_token: fechaHoraExpedicion,
                     duracion_token: `${expiresIn/60} minutos`

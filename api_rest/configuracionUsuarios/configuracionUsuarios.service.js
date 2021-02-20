@@ -91,7 +91,7 @@ module.exports = {
                                                     
                                                     if(result.length === 0){
 
-                                                        return callback(`The microservice module configuration with NOMBRE_MICROSERVICIO: ${data.nombre_microservicio} and NOMBRE_MODULO: ${data.nombre_modulo} has not been associated in microservice module configuration, please set up this configuration firts`, null, false);
+                                                        return callback(`The microservice module configuration with NOMBRE_MICROSERVICIO: ${data.nombre_microservicio} and NOMBRE_MODULO: ${data.nombre_modulo} has not been associated in microservice module configuration, please set up this configuration first`, null, false);
                                                     
                                                     }else if(result.length > 0){
             

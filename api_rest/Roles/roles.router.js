@@ -1,17 +1,13 @@
 const {
     crearRol,
-    consultarRoles,
-    consultarRolByNombreRol,
-    actualizarRolByID,
+    consultarRolesDinamico,
     eliminarRolByID,
 } = require('./roles.controller');
 
 const router = require('express').Router();
 
 router.post("/", crearRol);
-router.get("/", consultarRoles);
-router.get("/nombreRol", consultarRolByNombreRol);
-router.put("/", actualizarRolByID);
+router.get("/", consultarRolesDinamico);
 router.delete("/", eliminarRolByID);
 
 module.exports = router;
