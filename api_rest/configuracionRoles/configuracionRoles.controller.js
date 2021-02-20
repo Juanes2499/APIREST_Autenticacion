@@ -1,102 +1,141 @@
 const {
     crear_configuracionRol,
-    consultar_rolesAsiganadosUsuarios,
-    consultar_rolesAsiganadosUsuarios_ByNombreRol,
-    consultar_rolesAsiganadosUsuarios_ByEmail,
+    consultar_configuraciRoles_dinamico,
     eliminar_configuracionRol_ByID,
 } = require('./configuracionRoles.service');
+const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
     crearConfiguracionRol: (req, res) => {
+
         const body = req.body;
-        crear_configuracionRol(body, (err, result, state) => {
+
+        const parametrosEndpoint = {
+            email: true,
+            nombre_rol: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+        
+        crear_configuracionRol(body, (err, result, state)=>{
             if(err){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - error in crearConfiguracionRol",
+                    message: "Database create error - crearConfiguracionRol",
                     return: err
                 })
             }
             return res.status(201).json({
-                success:state,
+                success: state,
                 statusCode:201,
-                message: `The role configuration with ID_USER: ${body.id_user} and ID_ROL: ${body.id_rol} was successfully created`
-            })
-        })
+                message: `The register with EMAIL: ${body.email} and NOMBRE_ROL: ${body.nombre_rol} was successfully created`,
+              });
+        });
     },
-    consultarRolesAsiganadosUsuarios: (req, res) => {
-        consultar_rolesAsiganadosUsuarios((err, result, state) => {
-            if(err){
-                console.log(err);
-                return res.status(403).json({
-                    success:state,
-                    statusCode:403,
-                    message: "Database get error - error in consultarRolesAsiganadosUsuarios"
-                });
+    consultarConfiguraciRolesDinamico: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            seleccionar: true,
+            condicion: true,
+            agrupar: true,
+            ordenar: true,   
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
             }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        consultar_configuraciRoles_dinamico(body, (err, result, state) => {
+            if (state === false) {
+                console.log(err);
+                return res.status(500).json({
+                    success:state,
+                    message: "Database get error - error in consultarConfiguraciRolesDinamico",
+                    return: err
+                })
+            }
+
             return res.status(200).json({
                 success: state,
-                statusCode: 200,
-                data:result
-            })
-        })
-    },
-    consultarRolesAsiganadosUsuariosByNombreRol: (req, res) => {
-        const body = req.body;
-        consultar_rolesAsiganadosUsuarios_ByNombreRol(body, (err, result, state) => {
-            if(state === false){
-                return res.status(403).json({
-                    success: state, 
-                    statusCode: 403,
-                    message: "Database get error - error in consultarRolesAsiganadosUsuariosByNombreRol",
-                    return: err
-                });
-            }else if(result.length > 0){
-                return res.status(200).json({
-                    success: state,
-                    statusCode: 200,
-                    data:result
-                })
-            }
-        })
-    },
-    consultarRolesAsiganadosUsuariosByEmail: (req, res) => {
-        const body = req.body;
-        consultar_rolesAsiganadosUsuarios_ByEmail(body, (err, result, state) => {
-            if(state === false){
-                return res.status(403).json({
-                    success: state, 
-                    statusCode: 403,
-                    message: "Database get error - error in consultarRolesAsiganadosUsuariosByEmail",
-                    return: err
-                });
-            }else if(result.length > 0){
-                return res.status(200).json({
-                    success: state,
-                    statusCode: 200,
-                    data:result
-                })
-            }
-        })
+                statusCode:200,
+                data: result
+            });
+        });
     },
     eliminarConfiguracionRolByID: (req, res) => {
+
         const body = req.body;
+
+        const parametrosEndpoint = {
+            id_configuracion_roles: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
         eliminar_configuracionRol_ByID(body, (err, result, state) => {
+
             if(state === false){
+                console.log(err);
                 return res.status(403).json({
-                    success:state,
-                    statusCode:403,
+                    success: state, 
+                    statusCode: 403,
                     message: "Database delete error - error in eliminarConfiguracionRolByID",
                     return: err
                 });
             }
+
             return res.status(200).json({
                 success: state,
-                statusCode: 200,
-                message: `The role configuration with ID: ${body.id_configuracion} was successfully deleted`
-            })
-        })
+                statusCode:200,
+                message: `The microservice with ID_CONFIGURACION_ROLES: ${body.id_configuracion_roles} was successfully deleted`
+            });
+        });
     }
 }

@@ -7,6 +7,7 @@ const {MensajeverificarParametrosJson} = require("../../shared/verificarParametr
 
 module.exports = {
     crearRol: (req, res) => {
+        
         const body = req.body;
 
         const parametrosEndpoint = {
@@ -130,7 +131,7 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_MICROSERVICIO: ${body.id_rol} was successfully deleted`
+                message: `The microservice with ID_ROL: ${body.id_rol} was successfully deleted`
             });
         });
     }

@@ -64,9 +64,7 @@ module.exports = {
                 NOMBRE_ROL,
                 DETALLES,
                 FECHA_CREACION,
-                HORA_CREACION,
-                FECHA_ACTUALIZACION,
-                HORA_ACTUALIZACION
+                HORA_CREACION
             FROM ROLES
         `;
 
