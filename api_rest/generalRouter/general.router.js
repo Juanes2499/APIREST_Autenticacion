@@ -7,7 +7,7 @@ if(auth === "true"){
 
     console.log(`Authentication = ${auth}`)
 
-    const login = require('../Usuarios/login.router');
+    const login = require('../Login/login.router');
     const userAuth = require('../Usuarios/usuarios.authentication');
     const microservicoAuth = require('../Microservicios/microservicio.authentication');
     const moduloAuth = require('../Modulos/modulo.authentication');
@@ -29,7 +29,7 @@ if(auth === "true"){
 
     console.log(`Authentication = ${auth}`)
     
-    const login = require('../Usuarios/login.router');
+    const login = require('../Login/login.router');
     const userRouter = require('../Usuarios/usuarios.router');
     const microservicoRouter = require('../Microservicios/microservicio.router');
     const moduloRouter = require('../Modulos/modulo.router');
