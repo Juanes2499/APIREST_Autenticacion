@@ -36,6 +36,61 @@ module.exports ={
 
                     const LoginJson = resultToJson[0];
 
+                    const queryRoles = `
+                        SELECT 
+                            CR.ID_CONFIGURACION_ROLES,
+                            U.ID_USUARIO ,
+                            U.EMAIL,
+                            CR.ID_ROL, 
+                            CR.NOMBRE_ROL,
+                            U.FECHA_CREACION, 
+                            U.HORA_CREACION
+                        FROM CONFIGURACION_ROLES CR 
+                        INNER JOIN USUARIOS U ON CR.ID_USUARIO = U.ID_USUARIO
+                        WHERE U.EMAIL = ?
+                    `;
+
+                    pool.query(
+                        queryRoles
+                        ,
+                        [data.email],
+                        (error, result) => {
+
+                            if (error){
+                                return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                            }
+
+                            if(result.length === 0) {
+
+                                LoginJson[`ROLES`] = `The user with email: ${data.email} does not have any role asigned`
+
+                                return callback(null, LoginJson, true); 
+
+                            }else if(result.length > 0){
+
+                                const resultConfiguracionRolesToJson = JSON.parse(JSON.stringify(result));
+            
+                                let arrayroles = [];
+
+                                let i = 0;
+                                resultConfiguracionRolesToJson.forEach(x => {
+                                    arrayroles[i] = x.NOMBRE_ROL
+                                    i += 1;
+                                });
+
+                                let arrayrolesSinDuplicados = arrayroles.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
+
+                                let roles = {};
+
+                                arrayrolesSinDuplicados.forEach(x => {
+                                    roles[`ROL_${x}`] = true;
+                                })
+                                
+                                LoginJson['ROLES'] = roles;
+                            }
+                        }
+                    )
+
                     const queryConfiguracionUsuario =  `
                         SELECT
                             ID_CONFIGURACION_USUARIO,
@@ -58,7 +113,6 @@ module.exports ={
                         WHERE 
                             CU.EMAIL = ?  
                         ORDER BY CU.NOMBRE_MICROSERVICIO ASC      
-                    
                     `;
 
                     pool.query(
@@ -73,7 +127,7 @@ module.exports ={
 
                             if(result.length === 0) {
 
-                                LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any role asigned`
+                                LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any permission asigned`
 
                                 return callback(null, LoginJson, true); 
 
@@ -120,6 +174,5 @@ module.exports ={
                 }
             }
         )
-
     },
 }
