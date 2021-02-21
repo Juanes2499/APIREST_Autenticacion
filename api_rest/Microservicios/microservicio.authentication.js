@@ -18,10 +18,15 @@ userAuth.use("/", (req, res)=>{
                 return req;
             }else{
 
-                const superUser = req.decoded.ROLES.ROL_SUPER_USUARIO;
-                const moduloPermiso = req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_MICROSERVICIOS;
-                
-                if(moduloPermiso || superUser){
+                let moduloPermiso  = false;
+
+                try{
+                    moduloPermiso = req.decoded.ROLES.ROL_SUPER_USUARIO || req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_MICROSERVICIOS;
+                }catch{
+                    moduloPermiso  = false;
+                }
+
+                if(moduloPermiso){
                     microservicioRouter(req,res);
                 }
 

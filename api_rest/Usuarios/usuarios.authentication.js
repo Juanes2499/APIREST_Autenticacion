@@ -18,10 +18,15 @@ userAuth.use("/", (req, res)=>{
                 return req;
             }else{
 
-                const superUser = req.decoded.ROLES.ROL_SUPER_USUARIO;
-                const moduloPermiso = req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_USUARIOS;
-                
-                if(moduloPermiso || superUser){
+                let moduloPermiso  = false;
+
+                try{
+                    moduloPermiso = req.decoded.ROLES.ROL_SUPER_USUARIO || req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_USUARIOS;
+                }catch{
+                    moduloPermiso  = false;
+                }
+
+                if(moduloPermiso){
                     userRouter(req,res);
                 }
 

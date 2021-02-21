@@ -15,6 +15,9 @@ module.exports = {
             nombre_microservicio: true,
             detalles: true,
             url_microservicio: true,
+            alias_microservicio: true,
+            url_alias_microservicio: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -105,6 +108,9 @@ module.exports = {
             nombre_microservicio: true,
             detalles: true,
             url_microservicio: true,
+            alias_microservicio: true,
+            url_alias_microservicio: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);

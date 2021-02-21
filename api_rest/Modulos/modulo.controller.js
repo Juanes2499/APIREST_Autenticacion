@@ -15,6 +15,9 @@ module.exports = {
             nombre_modulo: true,
             detalles: true,
             url_modulo: true,
+            alias_modulo: true,
+            url_alias_modulo: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -106,6 +109,9 @@ module.exports = {
             nombre_modulo: true,
             detalles: true,
             url_modulo: true,
+            alias_modulo: true,
+            url_alias_modulo: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);

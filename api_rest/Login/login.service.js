@@ -64,8 +64,6 @@ module.exports ={
 
                                 LoginJson[`ROLES`] = `The user with email: ${data.email} does not have any role asigned`
 
-                                return callback(null, LoginJson, true); 
-
                             }else if(result.length > 0){
 
                                 const resultConfiguracionRolesToJson = JSON.parse(JSON.stringify(result));
@@ -112,7 +110,7 @@ module.exports ={
                         INNER JOIN MODULO ML ON CU.ID_MODULO = ML.ID_MODULO
                         WHERE 
                             CU.EMAIL = ?  
-                        ORDER BY CU.NOMBRE_MICROSERVICIO ASC      
+                        ORDER BY M.ORDEN ASC, ML.ORDEN
                     `;
 
                     pool.query(
@@ -128,8 +126,6 @@ module.exports ={
                             if(result.length === 0) {
 
                                 LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any permission asigned`
-
-                                return callback(null, LoginJson, true); 
 
                             }else if(result.length > 0){
                                 
@@ -166,9 +162,9 @@ module.exports ={
                                     LoginJson['PERMISOS'] = permisosMicroservicio;
                                 
                                 })
-                                
-                                return callback(null, LoginJson, true);
                             }
+                            
+                            return callback(null, LoginJson, true);
                         }
                     );
                 }

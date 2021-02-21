@@ -33,14 +33,14 @@ module.exports = {
                     const queryCrearModulo = `
                         INSERT 
                             INTO MODULO
-                            (ID_MODULO, NOMBRE_MODULO, DETALLES, URL_MODULO, FECHA_CREACION, HORA_CREACION)
+                            (ID_MODULO, NOMBRE_MODULO, DETALLES, URL_MODULO, ALIAS_MODULO, URL_ALIAS_MODULO, ORDEN, FECHA_CREACION, HORA_CREACION)
                         VALUES
-                            (UUID(), ?, ?, ?, CURDATE(), CURTIME())
+                            (UUID(), ?, ?, ?, ?, ?, ?, CURDATE(), CURTIME())
                     `;
 
                     pool.query(
                         queryCrearModulo,
-                        [data.nombre_modulo, data.detalles, data.url_modulo],
+                        [data.nombre_modulo, data.detalles, data.url_modulo, data.alias_modulo, data.url_alias_modulo, data.orden],
                         (error, result) => {
 
                             if(error){
@@ -62,6 +62,9 @@ module.exports = {
                 NOMBRE_MODULO,
                 DETALLES,
                 URL_MODULO,
+                ALIAS_MODULO,
+                URL_ALIAS_MODULO,
+                ORDEN,
                 FECHA_CREACION,
                 HORA_CREACION,
                 FECHA_ACTUALIZACION,
@@ -155,6 +158,9 @@ module.exports = {
                                             NOMBRE_MODULO = ?,
                                             DETALLES = ?,
                                             URL_MODULO = ?,
+                                            ALIAS_MODULO = ?,
+                                            URL_ALIAS_MODULO = ?,
+                                            ORDEN = ?,
                                             FECHA_ACTUALIZACION = CURDATE(),
                                             HORA_ACTUALIZACION = CURTIME()
                                         WHERE ID_MODULO = ?
@@ -162,7 +168,7 @@ module.exports = {
             
                                 pool.query(
                                     queryActualizarMicroservicio,
-                                    [data.nombre_modulo, data.detalles, data.url_modulo, data.id_modulo],
+                                    [data.nombre_modulo, data.detalles, data.url_modulo, data.alias_modulo, data.url_alias_modulo, data.orden, data.id_modulo],
                                     (error, result) => {
 
                                         if(error){

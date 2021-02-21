@@ -18,10 +18,15 @@ userAuth.use("/", (req, res)=>{
                 return req;
             }else{
 
-                const superUser = req.decoded.ROLES.ROL_SUPER_USUARIO;
-                const moduloPermiso = req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_ROLES;
+                let moduloPermiso  = false;
+
+                try{
+                    moduloPermiso = req.decoded.ROLES.ROL_SUPER_USUARIO || req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_ROLES;
+                }catch{
+                    moduloPermiso  = false;
+                }
                 
-                if(moduloPermiso || superUser){
+                if(moduloPermiso){
                     rolesRouter(req,res);
                 }
 
@@ -29,7 +34,7 @@ userAuth.use("/", (req, res)=>{
                     return res.status(500).json({
                         success:false,
                         statusCode:500,
-                        message: "The User has not access to microservices module"
+                        message: "The User has not access to role module"
                     })
                 }
             }

@@ -33,14 +33,14 @@ module.exports = {
                     const queryCrearMicroservicio = `
                         INSERT 
                             INTO MICROSERVICIOS
-                            (ID_MICROSERVICIO, NOMBRE_MICROSERVICIO, DETALLES, URL_MICROSERVICIO, FECHA_CREACION, HORA_CREACION)
+                            (ID_MICROSERVICIO, NOMBRE_MICROSERVICIO, DETALLES, URL_MICROSERVICIO, ALIAS_MICROSERIVICIO, URL_ALIAS_MICROSERVICIO, ORDEN, FECHA_CREACION, HORA_CREACION)
                         VALUES
-                            (UUID(), ?, ?, ?, CURDATE(), CURTIME())
+                            (UUID(), ?, ?, ?, ?, ?, ?, CURDATE(), CURTIME())
                     `;
 
                     pool.query(
                         queryCrearMicroservicio,
-                        [data.nombre_microservicio, data.detalles, data.url_microservicio],
+                        [data.nombre_microservicio, data.detalles, data.url_microservicio, data.alias_microservicio, data.url_alias_microservicio, data.orden],
                         (error, result) => {
 
                             if(error){
@@ -62,11 +62,15 @@ module.exports = {
                 NOMBRE_MICROSERVICIO,
                 DETALLES,
                 URL_MICROSERVICIO,
+                ALIAS_MICROSERIVICIO, 
+                URL_ALIAS_MICROSERVICIO,
+                ORDEN,
                 FECHA_CREACION,
                 HORA_CREACION,
                 FECHA_ACTUALIZACION,
                 HORA_ACTUALIZACION
             FROM MICROSERVICIOS
+            ORDER BY ORDEN
         `;
 
         const queryConsultarMicroservicioDinamico = consultaDinamica(
@@ -155,6 +159,9 @@ module.exports = {
                                             NOMBRE_MICROSERVICIO = ?,
                                             DETALLES = ?,
                                             URL_MICROSERVICIO = ?,
+                                            ALIAS_MICROSERIVICIO = ?, 
+                                            URL_ALIAS_MICROSERVICIO = ?,
+                                            ORDEN = ?,
                                             FECHA_ACTUALIZACION = CURDATE(),
                                             HORA_ACTUALIZACION = CURTIME()
                                         WHERE ID_MICROSERVICIO = ?
@@ -162,7 +169,7 @@ module.exports = {
             
                                 pool.query(
                                     queryActualizarMicroservicio,
-                                    [data.nombre_microservicio, data.detalles, data.url_microservicio, data.id_microservicio],
+                                    [data.nombre_microservicio, data.detalles, data.url_microservicio, data.alias_microservicio, data.url_alias_microservicio, data.orden, data.id_microservicio],
                                     (error, result) => {
 
                                         if(error){
