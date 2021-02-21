@@ -1,9 +1,14 @@
 require("dotenv").config()
+var cors = require('cors')
 const express = require('express');
 const app = express();
 
 const generalRouter = require('./api_rest/generalRouter/general.router');
 
+//Cors
+app.use(cors())
+
+//Test API
 app.get("/api",(req, res) =>{
     res.json({
         success: true,

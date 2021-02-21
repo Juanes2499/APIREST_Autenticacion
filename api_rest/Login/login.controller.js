@@ -9,14 +9,20 @@ module.exports ={
     login: (req, res) => {
         const body = req.body;
         autenticar_ByEmail(body, (err, results, state) => {
+
             if (err) {
-                console.log(err);
+                return res.status(401).json({
+                    success: state,
+                    statusCode: 401,
+                    message: "Invalid email",
+                    return: err,
+                });
             }
 
             if (!results) {
-                return res.status(500).json({
+                return res.status(401).json({
                     success: state,
-                    statusCode: 500,
+                    statusCode: 401,
                     message: "Invalid email",
                     return: err,
                 });
@@ -60,9 +66,9 @@ module.exports ={
                     duracion_token: `${expiresIn/60} minutos`
                 });
             } else {
-                return res.status(500).json({
+                return res.status(401).json({
                     success: state,
-                    statusCode: 500,
+                    statusCode: 401,
                     message: "Invalid email or password",
                 });
             }
