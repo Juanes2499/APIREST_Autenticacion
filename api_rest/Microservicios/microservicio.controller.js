@@ -17,6 +17,7 @@ module.exports = {
             url_microservicio: true,
             alias_microservicio: true,
             url_alias_microservicio: true,
+            icon_microservicio: true,
             orden: true,
         };
         
@@ -110,6 +111,7 @@ module.exports = {
             url_microservicio: true,
             alias_microservicio: true,
             url_alias_microservicio: true,
+            icon_microservicio: true,
             orden: true,
         };
         

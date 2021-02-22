@@ -27,6 +27,7 @@ const consultaDinamica = (queryBase, Select, Where, GroupBy, OrderBy) => {
 
         //Formar where
         let whereArray = [];
+        let whereArrayIN = [];
         
         let whereKeys = Object.keys(where);
         let whereValues = Object.values(where);
@@ -65,11 +66,15 @@ const consultaDinamica = (queryBase, Select, Where, GroupBy, OrderBy) => {
 
             whereValues[i].operador = whereValues[i].operador.toUpperCase(); //convierto a mayuscula el operador
 
-            whereArray.push(`${whereValues[i].conector_logico} ${whereKeys[i].toUpperCase()} ${whereValues[i].operador} '${whereValues[i].valor_condicion}'`);  //Formo el arreglo del where
+            if(whereValues[i].operador === "IN"){
+                whereArrayIN.push(`${whereValues[i].conector_logico} ${whereKeys[i].toUpperCase()} ${whereValues[i].operador} (${whereValues[i].valor_condicion})`);  //Formo el arreglo del where
+            }else{
+                whereArray.push(`${whereValues[i].conector_logico} ${whereKeys[i].toUpperCase()} ${whereValues[i].operador} '${whereValues[i].valor_condicion}'`);  //Formo el arreglo del where
+            }
 
         }
-
-        where =  `WHERE ${whereArray.toString().replace(","," ")}`; //Genero string del where
+        
+        where =  `WHERE ${whereArrayIN.toString().replace(/,/g," ").replace(/' '/g,"','")} ${whereArray.toString().replace(/,/g," ")}`; //Genero string del where
     }
 
     // Formo el group by

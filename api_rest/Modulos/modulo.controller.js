@@ -17,6 +17,7 @@ module.exports = {
             url_modulo: true,
             alias_modulo: true,
             url_alias_modulo: true,
+            icon_modulo: true,
             orden: true,
         };
         
@@ -111,6 +112,7 @@ module.exports = {
             url_modulo: true,
             alias_modulo: true,
             url_alias_modulo: true,
+            icon_modulo: true,
             orden: true,
         };
         

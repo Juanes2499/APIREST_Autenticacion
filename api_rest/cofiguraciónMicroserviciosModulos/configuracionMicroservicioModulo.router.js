@@ -6,7 +6,7 @@ const {
 const router = require('express').Router();
 
 router.post('/', crearConfiguracioMicroservicioModulo);
-router.get('/', consultarConfiguracioMicroservicioModuloDinamico);
+router.post('/get', consultarConfiguracioMicroservicioModuloDinamico);
 router.delete('/', eliminarConfiguracioMicroservicioModuloByID);
 
 module.exports = router;
