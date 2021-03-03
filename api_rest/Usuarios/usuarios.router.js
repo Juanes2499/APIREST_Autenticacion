@@ -7,7 +7,7 @@ const {
 const router = require('express').Router();
 
 router.post("/",crearUsuario);
-router.get("/", consultarUsuarios);
+router.post("/get", consultarUsuarios);
 router.put("/", actualizarUsuarioById),
 router.delete("/", eliminarUsuarioById);
     

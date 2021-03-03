@@ -19,16 +19,16 @@ module.exports={
 
                 if(result.length > 0){
 
-                    return callback(`The register with email: ${data.email} was created`, null, false);
+                    return callback(`The register with email: ${data.email} already was created`, null, false);
 
                 } else if (result.length === 0){
 
                     const queryCrearUsuario = `
                         INSERT 
                             INTO USUARIOS 
-                            (ID_USUARIO, NOMBRES, APELLIDOS, TIPO_DOC_ID, NUMERO_DOC_ID, EMAIL, PASSWORD, FECHA_CREACION, HORA_CREACION)
+                            (ID_USUARIO, NOMBRES, APELLIDOS, TIPO_DOC_ID, NUMERO_DOC_ID, EMAIL, PASSWORD, ACTIVO, FECHA_CREACION, HORA_CREACION)
                         VALUES 
-                            (UUID(), ?,?,?,?,?,?, CURDATE(), CURTIME())
+                            (UUID(), ?,?,?,?,?,?,?, CURDATE(), CURTIME())
                     `;
 
                     pool.query(
@@ -39,9 +39,11 @@ module.exports={
                             data.tipo_doc_id,
                             data.numero_doc_id,
                             data.email,
-                            data.password
+                            data.password,
+                            data.activo
                         ],
                         (error, result) =>{
+
                             if(error){
                                 return callback(`The register with email: ${data.email} could not be created`, null, false)
                             }
@@ -62,6 +64,7 @@ module.exports={
                 TIPO_DOC_ID,
                 NUMERO_DOC_ID,
                 EMAIL,
+                ACTIVO,
                 FECHA_CREACION,
                 HORA_CREACION,
                 FECHA_ACTUALIZACION,
@@ -132,13 +135,14 @@ module.exports={
                                 NUMERO_DOC_ID = ?,
                                 EMAIL = ?,
                                 PASSWORD = ?,
+                                ACTIVO = ?,
                                 FECHA_ACTUALIZACION = CURDATE(),
                                 HORA_ACTUALIZACION = CURTIME()
                             WHERE ID_USUARIO = ?`;
             
                     pool.query(
                         queryActualizarUsuarioByID,
-                      [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.id_usuario],
+                      [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.activo, data.id_usuario],
                       (error, result) => {
 
                         if (error) {

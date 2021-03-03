@@ -3,6 +3,8 @@ const {
     consultarConfiguracioMicroservicioModuloDinamico,
     eliminarConfiguracioMicroservicioModuloByID
 } = require('./configuracionMicroservicioModulo.controller');
+
+
 const router = require('express').Router();
 
 router.post('/', crearConfiguracioMicroservicioModulo);

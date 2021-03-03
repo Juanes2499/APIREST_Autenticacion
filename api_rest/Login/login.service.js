@@ -10,6 +10,7 @@ module.exports ={
                 U.APELLIDOS,
                 U.EMAIL,
                 U.PASSWORD,
+                U.ACTIVO,
                 U.FECHA_CREACION, 
                 U.HORA_CREACION
             FROM USUARIOS U 
@@ -36,137 +37,142 @@ module.exports ={
 
                     const LoginJson = resultToJson[0];
 
-                    const queryRoles = `
-                        SELECT 
-                            CR.ID_CONFIGURACION_ROLES,
-                            U.ID_USUARIO ,
-                            U.EMAIL,
-                            CR.ID_ROL, 
-                            CR.NOMBRE_ROL,
-                            U.FECHA_CREACION, 
-                            U.HORA_CREACION
-                        FROM CONFIGURACION_ROLES CR 
-                        INNER JOIN USUARIOS U ON CR.ID_USUARIO = U.ID_USUARIO
-                        WHERE U.EMAIL = ?
-                    `;
+                    if(LoginJson.ACTIVO === 1){
 
-                    pool.query(
-                        queryRoles
-                        ,
-                        [data.email],
-                        (error, result) => {
+                        const queryRoles = `
+                            SELECT 
+                                CR.ID_CONFIGURACION_ROLES,
+                                U.ID_USUARIO ,
+                                U.EMAIL,
+                                CR.ID_ROL, 
+                                CR.NOMBRE_ROL,
+                                U.FECHA_CREACION, 
+                                U.HORA_CREACION
+                            FROM CONFIGURACION_ROLES CR 
+                            INNER JOIN USUARIOS U ON CR.ID_USUARIO = U.ID_USUARIO
+                            WHERE U.EMAIL = ?
+                        `;
 
-                            if (error){
-                                return callback(`There is/are error(s), please contact with the administrator`, null, false);
-                            }
+                        pool.query(
+                            queryRoles
+                            ,
+                            [data.email],
+                            (error, result) => {
 
-                            if(result.length === 0) {
+                                if (error){
+                                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                                }
 
-                                LoginJson[`ROLES`] = `The user with email: ${data.email} does not have any role asigned`
+                                if(result.length === 0) {
 
-                            }else if(result.length > 0){
+                                    LoginJson[`ROLES`] = `The user with email: ${data.email} does not have any role asigned`
 
-                                const resultConfiguracionRolesToJson = JSON.parse(JSON.stringify(result));
-            
-                                let arrayroles = [];
+                                }else if(result.length > 0){
 
-                                let i = 0;
-                                resultConfiguracionRolesToJson.forEach(x => {
-                                    arrayroles[i] = x.NOMBRE_ROL
-                                    i += 1;
-                                });
+                                    const resultConfiguracionRolesToJson = JSON.parse(JSON.stringify(result));
+                
+                                    let arrayroles = [];
 
-                                let arrayrolesSinDuplicados = arrayroles.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
+                                    let i = 0;
+                                    resultConfiguracionRolesToJson.forEach(x => {
+                                        arrayroles[i] = x.NOMBRE_ROL
+                                        i += 1;
+                                    });
 
-                                let roles = {};
+                                    let arrayrolesSinDuplicados = arrayroles.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
 
-                                arrayrolesSinDuplicados.forEach(x => {
-                                    roles[`ROL_${x}`] = true;
-                                })
-                                
-                                LoginJson['ROLES'] = roles;
-                            }
-                        }
-                    )
+                                    let roles = {};
 
-                    const queryConfiguracionUsuario =  `
-                        SELECT
-                            ID_CONFIGURACION_USUARIO,
-                            CU.ID_USUARIO,
-                            U.NOMBRES,
-                            U.APELLIDOS,
-                            CU.EMAIL,
-                            CU.ID_MICROSERVICIO ID_MICROSERVICIO,
-                            CU.NOMBRE_MICROSERVICIO NOMBRE_MICROSERVICIO,
-                            M.URL_MICROSERVICIO URL_MICROSERVICIO,
-                            CU.ID_MODULO ID_MODULO,
-                            CU.NOMBRE_MODULO NOMBRE_MODULO,
-                            ML.URL_MODULO URL_MODULO,
-                            CU.FECHA_CREACION FECHA_CREACION,
-                            CU.HORA_CREACION HORA_CREACION
-                        FROM CONFIGURACION_USUARIOS CU
-                        INNER JOIN USUARIOS U ON CU.ID_USUARIO = U.ID_USUARIO 
-                        INNER JOIN MICROSERVICIOS M ON CU.ID_MICROSERVICIO = M.ID_MICROSERVICIO 
-                        INNER JOIN MODULO ML ON CU.ID_MODULO = ML.ID_MODULO
-                        WHERE 
-                            CU.EMAIL = ?  
-                        ORDER BY M.ORDEN ASC, ML.ORDEN
-                    `;
-
-                    pool.query(
-                        queryConfiguracionUsuario
-                        ,
-                        [data.email],
-                        (error, result) => {
-
-                            if (error){
-                                return callback(`There is/are error(s), please contact with the administrator`, null, false);
-                            }
-
-                            if(result.length === 0) {
-
-                                LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any permission asigned`
-
-                            }else if(result.length > 0){
-                                
-                                const resultConfiguracionUsuarioToJson = JSON.parse(JSON.stringify(result));
-
-                                let arrayMicroservicios = [];
-
-                                let i = 0;
-                                resultConfiguracionUsuarioToJson.forEach(x => {
-                                    arrayMicroservicios[i] = x.NOMBRE_MICROSERVICIO
-                                    i += 1;
-                                });
-
-                                let arrayMicroserviciosSinDuplicados = arrayMicroservicios.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
-
-                                let permisosMicroservicio = {};
-
-                                arrayMicroserviciosSinDuplicados.forEach(x => {
-                                
-                                    let modulosFiltradosPorMicroservicio = resultConfiguracionUsuarioToJson.filter(i => {
-                                        if (i.NOMBRE_MICROSERVICIO === x){
-                                            return i.NOMBRE_MODULO;
-                                        }
+                                    arrayrolesSinDuplicados.forEach(x => {
+                                        roles[`ROL_${x}`] = true;
                                     })
-
-                                    let permisosModulos = {};
-                                    modulosFiltradosPorMicroservicio.forEach(k => {
-                                        permisosModulos[`MOD_${k.NOMBRE_MODULO}`] = true;
-                                    })
-
-                                    permisosMicroservicio[`MS_${x}`] = permisosModulos;
-
-                                    //LoginJson[`MS_${x}`] = permisosModulos;
-                                    LoginJson['PERMISOS'] = permisosMicroservicio;
-                                
-                                })
+                                    
+                                    LoginJson['ROLES'] = roles;
+                                }
                             }
-                            
-                            return callback(null, LoginJson, true);
-                        }
-                    );
+                        )
+
+                        const queryConfiguracionUsuario =  `
+                            SELECT
+                                ID_CONFIGURACION_USUARIO,
+                                CU.ID_USUARIO,
+                                U.NOMBRES,
+                                U.APELLIDOS,
+                                CU.EMAIL,
+                                CU.ID_MICROSERVICIO ID_MICROSERVICIO,
+                                CU.NOMBRE_MICROSERVICIO NOMBRE_MICROSERVICIO,
+                                M.URL_MICROSERVICIO URL_MICROSERVICIO,
+                                CU.ID_MODULO ID_MODULO,
+                                CU.NOMBRE_MODULO NOMBRE_MODULO,
+                                ML.URL_MODULO URL_MODULO,
+                                CU.FECHA_CREACION FECHA_CREACION,
+                                CU.HORA_CREACION HORA_CREACION
+                            FROM CONFIGURACION_USUARIOS CU
+                            INNER JOIN USUARIOS U ON CU.ID_USUARIO = U.ID_USUARIO 
+                            INNER JOIN MICROSERVICIOS M ON CU.ID_MICROSERVICIO = M.ID_MICROSERVICIO 
+                            INNER JOIN MODULO ML ON CU.ID_MODULO = ML.ID_MODULO
+                            WHERE 
+                                CU.EMAIL = ?  
+                            ORDER BY M.ORDEN ASC, ML.ORDEN
+                        `;
+
+                        pool.query(
+                            queryConfiguracionUsuario
+                            ,
+                            [data.email],
+                            (error, result) => {
+
+                                if (error){
+                                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                                }
+
+                                if(result.length === 0) {
+
+                                    LoginJson[`PERMISOS`] = `The user with email: ${data.email} does not have any permission asigned`
+
+                                }else if(result.length > 0){
+                                    
+                                    const resultConfiguracionUsuarioToJson = JSON.parse(JSON.stringify(result));
+
+                                    let arrayMicroservicios = [];
+
+                                    let i = 0;
+                                    resultConfiguracionUsuarioToJson.forEach(x => {
+                                        arrayMicroservicios[i] = x.NOMBRE_MICROSERVICIO
+                                        i += 1;
+                                    });
+
+                                    let arrayMicroserviciosSinDuplicados = arrayMicroservicios.filter((v, i, a) => a.indexOf(v) === i); //Eliminar duplicados
+
+                                    let permisosMicroservicio = {};
+
+                                    arrayMicroserviciosSinDuplicados.forEach(x => {
+                                    
+                                        let modulosFiltradosPorMicroservicio = resultConfiguracionUsuarioToJson.filter(i => {
+                                            if (i.NOMBRE_MICROSERVICIO === x){
+                                                return i.NOMBRE_MODULO;
+                                            }
+                                        })
+
+                                        let permisosModulos = {};
+                                        modulosFiltradosPorMicroservicio.forEach(k => {
+                                            permisosModulos[`MOD_${k.NOMBRE_MODULO}`] = true;
+                                        })
+
+                                        permisosMicroservicio[`MS_${x}`] = permisosModulos;
+
+                                        //LoginJson[`MS_${x}`] = permisosModulos;
+                                        LoginJson['PERMISOS'] = permisosMicroservicio;
+                                    
+                                    })
+                                }
+                                
+                                return callback(null, LoginJson, true);
+                            }
+                        );
+                    }else if(LoginJson.ACTIVO === 0){
+                        return callback(`The user with email: ${data.email} is not active `, null, false);
+                    }
                 }
             }
         )

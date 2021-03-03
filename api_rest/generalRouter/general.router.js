@@ -24,7 +24,12 @@ if(auth === "true"){
     generalRouters.use("/configuracion_usuarios", configuracionUsarioAuth);
     generalRouters.use("/roles", rolesAuth);
     generalRouters.use("/configuracionRol", configuracionRolesAuth);
+    
+    //Open routes
+    const configuracionMicroservicioModuloOpenAuth = require('../cofiguraciónMicroserviciosModulos/cofiguraciónMicroserviciosModulos.authenitication.open');
 
+    generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenAuth);
+    
 }else if (auth === "false"){
 
     console.log(`Authentication = ${auth}`)
@@ -46,6 +51,11 @@ if(auth === "true"){
     generalRouters.use("/configuracion_usuarios", configuracionUsarioRouter);
     generalRouters.use("/roles", rolesRouter);
     generalRouters.use("/configuracionRol", configuracionRolesRouter);
+
+    //Open routes
+    const configuracionMicroservicioModuloOpenAuth = require('../cofiguraciónMicroserviciosModulos/cofiguraciónMicroserviciosModulos.authenitication.open');
+
+    generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenAuth);
 }
 
 module.exports = generalRouters;

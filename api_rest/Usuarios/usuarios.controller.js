@@ -23,6 +23,7 @@ module.exports = {
             numero_doc_id: true,   
             email: true,  
             password: true,  
+            activo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -133,6 +134,7 @@ module.exports = {
             numero_doc_id: true,   
             email: true,  
             password: true,  
+            activo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
