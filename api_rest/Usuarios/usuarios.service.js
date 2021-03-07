@@ -127,23 +127,42 @@ module.exports={
                     return callback(`The user with ID_USUARIO ${data.id_usuario} does not exist `, null, false);
                 }else if (result.length > 0){
 
-                    const queryActualizarUsuarioByID = `
+                    let queryActualizarUsuarioByID = '';
+                    let arrayParams = [];
+
+                    if(data.password === ''){
+                        queryActualizarUsuarioByID = `
                         UPDATE USUARIOS
                             SET NOMBRES = ?,
                                 APELLIDOS = ?,
                                 TIPO_DOC_ID = ?,
                                 NUMERO_DOC_ID = ?,
                                 EMAIL = ?,
-                                PASSWORD = ?,
                                 ACTIVO = ?,
                                 FECHA_ACTUALIZACION = CURDATE(),
                                 HORA_ACTUALIZACION = CURTIME()
                             WHERE ID_USUARIO = ?`;
-            
+                        arrayParams = [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.activo, data.id_usuario]
+                    }else if(data.password !== ''){
+                        queryActualizarUsuarioByID = `
+                            UPDATE USUARIOS
+                                SET NOMBRES = ?,
+                                    APELLIDOS = ?,
+                                    TIPO_DOC_ID = ?,
+                                    NUMERO_DOC_ID = ?,
+                                    EMAIL = ?,
+                                    PASSWORD = ?,
+                                    ACTIVO = ?,
+                                    FECHA_ACTUALIZACION = CURDATE(),
+                                    HORA_ACTUALIZACION = CURTIME()
+                                WHERE ID_USUARIO = ?`;
+                        arrayParams = [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.activo, data.id_usuario]
+                    }
+           
                     pool.query(
                         queryActualizarUsuarioByID,
-                      [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.password, data.activo, data.id_usuario],
-                      (error, result) => {
+                        arrayParams,
+                        (error, result) => {
 
                         if (error) {
                             return callback(`The register with ID_USER: ${data.id_usuario} could not be updated`, null, false);
