@@ -130,7 +130,7 @@ module.exports={
                     let queryActualizarUsuarioByID = '';
                     let arrayParams = [];
 
-                    if(data.password === ''){
+                    if(data.password === null){
                         queryActualizarUsuarioByID = `
                         UPDATE USUARIOS
                             SET NOMBRES = ?,
@@ -143,7 +143,7 @@ module.exports={
                                 HORA_ACTUALIZACION = CURTIME()
                             WHERE ID_USUARIO = ?`;
                         arrayParams = [data.nombres, data.apellidos, data.tipo_doc_id, data.numero_doc_id, data.email, data.activo, data.id_usuario]
-                    }else if(data.password !== ''){
+                    }else if(data.password !== null){
                         queryActualizarUsuarioByID = `
                             UPDATE USUARIOS
                                 SET NOMBRES = ?,

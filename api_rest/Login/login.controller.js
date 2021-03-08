@@ -14,7 +14,7 @@ module.exports ={
                 return res.status(401).json({
                     success: state,
                     statusCode: 401,
-                    message: "Invalid email",
+                    message: err,
                     return: err,
                 });
             }
@@ -23,7 +23,7 @@ module.exports ={
                 return res.status(401).json({
                     success: state,
                     statusCode: 401,
-                    message: "Invalid email",
+                    message: err,
                     return: err,
                 });
             }

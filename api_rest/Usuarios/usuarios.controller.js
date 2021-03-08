@@ -156,15 +156,17 @@ module.exports = {
 
         const salt = genSaltSync(10);
         
-        const encriptPass = new Promise((resolve, reject)=>{
-            body.password = hashSync(body.password,salt)
-            resolve()
-        })
-        encriptPass
-            .then()
-            .catch((err)=>{
-                console.log(err);
-            });
+        if(body.password !== null){
+            const encriptPass = new Promise((resolve, reject)=>{
+                body.password = hashSync(body.password,salt)
+                resolve()
+            })
+            encriptPass
+                .then()
+                .catch((err)=>{
+                    console.log(err);
+                });
+        }
 
         actualizar_usuario_byId(body, (err, result, state) => {
 
