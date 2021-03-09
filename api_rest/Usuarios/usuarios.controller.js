@@ -22,7 +22,6 @@ module.exports = {
             tipo_doc_id: true,
             numero_doc_id: true,   
             email: true,  
-            password: true,  
             activo: true,
         };
         
@@ -42,19 +41,6 @@ module.exports = {
                 message: errorData.mensaje_retornado
             })
         }
-        
-        const salt = genSaltSync(10);
-        
-        const encriptPass = new Promise((resolve, reject)=>{
-            body.password = hashSync(body.password,salt)
-            resolve()
-        })
-
-        encriptPass
-            .then()
-            .catch((err)=>{
-                console.log(err);
-            });
         
         crear_Usuario(body, (err, result, state)=>{
             if(err){

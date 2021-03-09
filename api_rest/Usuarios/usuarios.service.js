@@ -1,5 +1,9 @@
 const pool = require("../../config/database");
 const consultaDinamica = require("../../shared/consultaDinamica");
+const sendEmail = require("../../shared/sendEmail");
+const crypto = require("crypto");
+const base64url = require("base64url");
+const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 
 module.exports={
     crear_Usuario: (data, callback)=>{
@@ -31,6 +35,22 @@ module.exports={
                             (UUID(), ?,?,?,?,?,?,?, CURDATE(), CURTIME())
                     `;
 
+                    let passWordAletoria = base64url(crypto.randomBytes(15));
+
+                    let passWordAletoriaEncrypted = '';
+
+                    const salt = genSaltSync(10);
+                    const encriptPass = new Promise((resolve, reject)=>{
+                        passWordAletoriaEncrypted = hashSync(passWordAletoria,salt)
+                        resolve()
+                    })
+
+                    encriptPass
+                        .then()
+                        .catch((err)=>{
+                            console.log(err);
+                        });
+
                     pool.query(
                         queryCrearUsuario,
                         [
@@ -39,15 +59,27 @@ module.exports={
                             data.tipo_doc_id,
                             data.numero_doc_id,
                             data.email,
-                            data.password,
+                            passWordAletoriaEncrypted,
                             data.activo
                         ],
                         (error, result) =>{
 
                             if(error){
                                 return callback(`The register with email: ${data.email} could not be created`, null, false)
+                            }else{
+                                sendEmail(
+                                    data.email,
+                                    'Creación usuario ResCity',
+                                    `Apreciado usuario ResCity: ${data.nombres} ${data.apellidos}, su cuenta con correo electrónico: ${data.email} ha sido creada exitosamente. Por favor ingresar con la siguiente contraseña temporal: ${passWordAletoria} para realizar la actuliazación de la misma. Finalmente, comuniquese con el administrador de la pltaforma para la configuración y activación de su cuenta. Muchas gracias.`,
+                                    (result) => {
+                                        if(result === false) {
+                                            return callback('Email could not be sended', null, false)
+                                        }else{
+                                            return callback(null, null, true)
+                                        }
+                                    }
+                                )
                             }
-                            return callback(null, null, true)
                         }
                     );
                 }

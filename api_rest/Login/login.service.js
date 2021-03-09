@@ -1,4 +1,8 @@
 const pool = require("../../config/database");
+const sendEmail = require("../../shared/sendEmail");
+const crypto = require("crypto");
+const base64url = require("base64url");
+const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 
 module.exports ={
     autenticar_ByEmail: (data, callback) => {
@@ -177,4 +181,85 @@ module.exports ={
             }
         )
     },
+    solicitar_cambio_contrasena: (data, callback) => { 
+
+        const queryConsultarUsuario = ` 
+            SELECT 
+                NOMBRES,
+                APELLIDOS
+            FROM USUARIOS U 
+            WHERE 
+                U.EMAIL = ?
+        `;
+
+        pool.query(
+            queryConsultarUsuario,
+            [data.email],
+            (error, resultUser) => {
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+                
+                if(resultUser.length === 0){
+
+                    return callback(`The user with email: ${data.email} does not exist `, null, false);
+
+                }else if(resultUser.length > 0){
+
+                    const usuario = JSON.parse(JSON.stringify(resultUser))[0];
+
+                    let passWordAletoria = base64url(crypto.randomBytes(15));
+
+                    let passWordAletoriaEncrypted = '';
+
+                    const salt = genSaltSync(10);
+                    const encriptPass = new Promise((resolve, reject)=>{
+                        passWordAletoriaEncrypted = hashSync(passWordAletoria,salt)
+                        resolve()
+                    })
+
+                    encriptPass
+                        .then()
+                        .catch((err)=>{
+                            console.log(err);
+                        });
+
+                    queryActualizarUsuarioCambioContrasena = `
+                        UPDATE USUARIOS
+                            SET PASSWORD = ?,
+                                PASSWORD_ACTIVA = false,
+                                PASSWORD_AUTENTICACION = null,
+                                ACTIVO = false,
+                                FECHA_ACTUALIZACION_PASSWORD = CURDATE(),
+                                HORA_ACTUALIZACION_PASSWORD = CURTIME()
+                            WHERE EMAIL = ?`;
+
+                    pool.query(
+                        queryActualizarUsuarioCambioContrasena,
+                        [passWordAletoriaEncrypted,data.email],
+                        (error, result) => {
+
+                            if (error) {
+                                return callback(`The register with EMAIL: ${data.email} can not update the password`, null, false);
+                            }
+
+                            sendEmail(
+                                data.email,
+                                'Recuperación contraseña usuario ResCity',
+                                `Apreciado usuario ResCity: ${usuario.NOMBRES} ${usuario.APELLIDOS}, Ha solicitado recuperar su contraseña. Por favor ingresar sesión con la siguiente contraseña temporal: ${passWordAletoria} para realizar la actuliazación de la misma. Durante este periodo su cuenta permanece inactiva hasta que realice el cambio de contraseña. Si presenta algun tipo de inconveniente comunicarse con el administrador de la plataforma. Muchas gracias.`,
+                                (result) => {
+                                    if(result === false) {
+                                        return callback('Email could not be sended', null, false)
+                                    }else{
+                                        return callback(null, null, true)
+                                    }
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+        )
+    }
 }
