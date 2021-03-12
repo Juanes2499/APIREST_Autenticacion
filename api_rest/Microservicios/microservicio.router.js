@@ -9,6 +9,6 @@ const router = require('express').Router();
 router.post("/", crearMicroservicio);
 router.post("/get", consultarMicroservicioDinamico);
 router.put("/", actualizarMicroservicioByID);
-router.delete("/", eliminarMicroservicioById);
+router.post("/delete", eliminarMicroservicioById);
     
 module.exports = router;
