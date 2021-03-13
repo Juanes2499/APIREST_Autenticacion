@@ -7,7 +7,7 @@ const {
 const router = require('express').Router();
 
 router.post("/", crearRol);
-router.get("/", consultarRolesDinamico);
-router.delete("/", eliminarRolByID);
+router.post("/get", consultarRolesDinamico);
+router.post("/delete", eliminarRolByID);
 
 module.exports = router;

@@ -7,8 +7,8 @@ const {
 const router = require('express').Router();
 
 router.post('/', crearModulo);
-router.get('/', consultarModuloDinamico);
+router.post('/get', consultarModuloDinamico);
 router.put('/', actualizarModuloByID);
-router.delete('/', eliminarModuloById);
+router.post('/delete', eliminarModuloById);
 
 module.exports = router;
