@@ -6,7 +6,7 @@ const {
 const router = require('express').Router();
 
 router.post('/', crearConfiguracionUsuarios);
-router.get('/', consultarConfiguracionUsuarioDinamico);
-router.delete('/', eliminarConfiguracionUsuarioByID )
+router.post('/get', consultarConfiguracionUsuarioDinamico);
+router.post('/delete', eliminarConfiguracionUsuarioByID )
 
 module.exports = router;
