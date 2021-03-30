@@ -9,6 +9,7 @@ if(auth === "true"){
 
     const login = require('../Login/login.router');
     const userAuth = require('../Usuarios/usuarios.authentication');
+    const deviceAuth = require('../Dispositivos/Dispositivos.authentication');
     const microservicoAuth = require('../Microservicios/microservicio.authentication');
     const moduloAuth = require('../Modulos/modulo.authentication');
     const configuracionMicroservicioModuloAuth = require('../cofiguraciónMicroserviciosModulos/configuracionMicroservicioModulo.authentication');
@@ -18,6 +19,7 @@ if(auth === "true"){
     
     generalRouters.use("/login", login);
     generalRouters.use("/usuarios", userAuth);
+    generalRouters.use("/dispositivos", deviceAuth);
     generalRouters.use("/microservicios", microservicoAuth);
     generalRouters.use("/modulos", moduloAuth);
     generalRouters.use("/configuracion_microservicio_modulos", configuracionMicroservicioModuloAuth);
@@ -36,6 +38,7 @@ if(auth === "true"){
     
     const login = require('../Login/login.router');
     const userRouter = require('../Usuarios/usuarios.router');
+    const deviceRouter = require('../Dispositivos/Dispositivos.router');
     const microservicoRouter = require('../Microservicios/microservicio.router');
     const moduloRouter = require('../Modulos/modulo.router');
     const configuracionMicroservicioModuloRouter = require('../cofiguraciónMicroserviciosModulos/configuracionMicroservicioModulo.router');
@@ -44,7 +47,8 @@ if(auth === "true"){
     const configuracionRolesRouter = require('../configuracionRoles/configuracionRoles.router');
     
     generalRouters.use("/login", login);
-    generalRouters.use("/usuarios", userRouter);
+    generalRouters.use("/usuarios", deviceRouter);
+    generalRouters.use("/dispositivos", deviceAuth);
     generalRouters.use("/microservicios", microservicoRouter);
     generalRouters.use("/modulos", moduloRouter);
     generalRouters.use("/configuracion_microservicio_modulos", configuracionMicroservicioModuloRouter);
