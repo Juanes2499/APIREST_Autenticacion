@@ -29,8 +29,10 @@ if(auth === "true"){
     
     //Open routes
     const configuracionMicroservicioModuloOpenAuth = require('../cofiguraciónMicroserviciosModulos/cofiguraciónMicroserviciosModulos.authenitication.open');
+    const deviceAuthOpen = require('../Dispositivos/Dispositivos.authentication.open');
 
     generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenAuth);
+    generalRouters.use("/dispositivos_open", deviceAuthOpen);
     
 }else if (auth === "false"){
 
@@ -57,9 +59,11 @@ if(auth === "true"){
     generalRouters.use("/configuracionRol", configuracionRolesRouter);
 
     //Open routes
-    const configuracionMicroservicioModuloOpenAuth = require('../cofiguraciónMicroserviciosModulos/cofiguraciónMicroserviciosModulos.authenitication.open');
+    const configuracionMicroservicioModuloOpenRouter = require('../cofiguraciónMicroserviciosModulos/cofiguraciónMicroserviciosModulos.router.open');
+    const deviceRouterOpen = require('../Dispositivos/Dispositivos.router.open');
 
-    generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenAuth);
+    generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenRouter);
+    generalRouters.use("/dispositivos_open", deviceRouterOpen);
 }
 
 module.exports = generalRouters;
