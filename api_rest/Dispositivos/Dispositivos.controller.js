@@ -13,6 +13,8 @@ module.exports = {
         const body = req.body;
 
         const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
             marca: true,
             referencia: true,
             latitud: true,
@@ -39,6 +41,7 @@ module.exports = {
         }
         
         crear_dispositivo(body, (err, result, state)=>{
+
             if(err){
                 console.log(err);
                 return res.status(500).json({
@@ -48,6 +51,7 @@ module.exports = {
                     return: err
                 })
             }
+
             return res.status(201).json({
                 success: state,
                 statusCode:201,
@@ -60,6 +64,8 @@ module.exports = {
         const body = req.body;
 
         const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
             seleccionar: true,
             condicion: true,
             agrupar: true,
@@ -109,6 +115,8 @@ module.exports = {
         const body = req.body;
 
         const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
             id_dispositivo: true,
             marca: true,
             referencia: true,
@@ -174,6 +182,8 @@ module.exports = {
         const body = req.body;
 
         const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
             id_dispositivo: true,
         };
         

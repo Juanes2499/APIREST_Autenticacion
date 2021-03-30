@@ -9,7 +9,7 @@ const { sign } = require("jsonwebtoken");
 module.exports={
     crear_dispositivo: (data, callback)=>{
         
-        data.email = data.email.toLowerCase();
+        data.email_responsable = data.email_responsable.toLowerCase();
 
         const queryConsultarExistenciaUsuario = `
             SELECT * FROM USUARIOS
@@ -59,6 +59,15 @@ module.exports={
                                 const key = process.env.TOKEN_KEY.toString();
                                 const expiresInDispositivo = parseInt(process.env.TOKEN_EXPIRE_IN_DISPOSITIVO);
 
+                                const payloald = {
+                                    marca: data.marca,
+                                    referencia: data.referencia,
+                                    latitud: data.latitud,
+                                    longitud: data.longitud,
+                                    nombre_microservicio: data.nombre_microservicio,
+                                    email_responsable: data.email_responsable,
+                                }
+                                
                                 const jsonTokenDispositivo = sign(payloald, key, {
                                     expiresIn: expiresInDispositivo,
                                 });
@@ -85,7 +94,7 @@ module.exports={
                                             EMAIL_RESPONSABLE,
                                             PASSWORD,
                                             FECHA_CREACION, 
-                                            HORA_CREACION,
+                                            HORA_CREACION
                                         )
                                     VALUES (
                                         UUID(),
@@ -122,7 +131,7 @@ module.exports={
                                             return callback(`The device could not be created, please contatc with IT department`, null, false)
                                         }else{
                                             sendEmail(
-                                                data.email,
+                                                data.email_responsable,
                                                 'Creación dispositivo ResCity',
                                                 `Apreciado usuario ResCity: ${resultDeviceToJson.NOMBRES} ${resultDeviceToJson.APELLIDOS}, se ha registrado un dispositivo bajo su 
                                                 responsabilidad, por favor cambiar la contraseña del dispositivo usando esta contraseña inicial: ${passWordAletoriaEncrypted}. 
@@ -167,7 +176,8 @@ module.exports={
                 HORA_CREACION,
                 FECHA_ACTUALIZACION,
                 HORA_ACTUALIZACION
-            FROM USUARIOS
+            FROM DISPOSITIVOS
+            WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'
         `;
 
         const queryConsultarDispositivos = consultaDinamica(
@@ -237,7 +247,7 @@ module.exports={
                                 DISPOSITIVO_ACTIVO = ?,
                                 FECHA_ACTUALIZACION = CURDATE(),
                                 HORA_ACTUALIZACION = CURTIME()
-                        WHERE ID_DISPOSITIVO = ?`;
+                        WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes} and ID_DISPOSITIVO = ?`;
 
                     let arrayParams = [
                         data.marca,
@@ -293,7 +303,7 @@ module.exports={
                 }else if (result.length > 0){
 
                     const queryEliminarUsuarioById = `
-                        DELETE FROM DISPOSITIVOS WHERE ID_DISPOSITIVO = ?
+                        DELETE FROM DISPOSITIVOS WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes} and ID_DISPOSITIVO = ?
                     `;
 
                     pool.query(
