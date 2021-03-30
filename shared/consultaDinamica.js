@@ -49,7 +49,7 @@ const consultaDinamica = (queryBase, Select, Where, GroupBy, OrderBy) => {
                 return consutaDinamicaReturn = {
                     query: null,
                     error: true,
-                    message: `${verificarParametrosCondiciones.messageFaltantes} or ${verificarParametrosCondiciones.messageMalEscritos} in the condition: ${whereKeys[i].toUpperCase()}, please set a all required parameters`
+                    message: `${verificarParametrosCondiciones.messageFaltantes} or ${verificarParametrosCondiciones.messageMalEscritos} in the condition: ${whereKeys[i].toUpperCase()}, please set up all required parameters`
                 };
             }
             

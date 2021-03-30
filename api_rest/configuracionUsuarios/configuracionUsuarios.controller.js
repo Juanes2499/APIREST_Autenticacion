@@ -23,7 +23,7 @@ module.exports = {
         if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
             
             const errorData = {
-                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
             }
 
             return res.status(500).json({
@@ -70,7 +70,7 @@ module.exports = {
         if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
             
             const errorData = {
-                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
             }
 
             return res.status(500).json({
@@ -112,7 +112,7 @@ module.exports = {
         if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
             
             const errorData = {
-                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set a all required parameters`
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
             }
 
             return res.status(500).json({
