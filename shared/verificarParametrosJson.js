@@ -57,17 +57,11 @@ module.exports = {
         let messageReturn = {
             error: false,
             messageFaltantes: null,
-            messageMalEscritos: null,
         };
 
         if (arrayResult[0].length > 0){
             messageReturn.error = true;
             messageReturn.messageFaltantes = `this/these parameter(s) is/are missing: ${arrayResult[0].toString().replace(",", ", ")}`;
-        }
-
-        if(arrayResult[1].length > 0){
-            messageReturn.error = true;
-            messageReturn.messageMalEscritos= `this/these parameter(s) is/are misspelled: ${arrayResult[1].toString().replace(",", ", ")}`;
         }
 
         return messageReturn;
