@@ -16,7 +16,7 @@ router.post("/get", consultarDispositivos);
 router.put("/", actualizarDispositivoById),
 router.post("/delete", eliminarDispositivoById);
 
-//Adicioanales
+//Adicionales
 router.post('/microservicios/get', consultarMicroservicioDinamico);
     
 module.exports = router;

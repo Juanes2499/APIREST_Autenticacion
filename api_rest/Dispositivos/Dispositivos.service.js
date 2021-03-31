@@ -11,6 +11,10 @@ module.exports={
         
         data.email_responsable = data.email_responsable.toLowerCase();
 
+        if(data.nombre_microservicio != data.microservicio_interes && data.microservicio_interes != 'GLOBAL' ){
+            return callback(`El nombre del microservicio: ${data.nombre_microservicio} no coincide con el microservicio de interes: ${data.microservicio_interes}`, null, false);
+        }
+
         const queryConsultarExistenciaUsuario = `
             SELECT * FROM USUARIOS
             WHERE EMAIL = ? 
@@ -156,30 +160,33 @@ module.exports={
         )
     },
     consultar_dispositivos: (data, callback) =>{
+        
+        //let queryBaseConsultarDispositivos = '';
 
-        const queryBaseConsultarDispositivos = `
-            SELECT
-                ID_DISPOSITIVO,
-                TOKEN,
-                MARCA,
-                REFERENCIA,
-                LATITUD,
-                LONGITUD,
-                ID_MICROSERVICIO,
-                NOMBRE_MICROSERVICIO,
-                EMAIL_RESPONSABLE,
-                PASSWORD_ACTIVA,
-                DISPOSITIVO_ACTIVO,
-                FECHA_ACTUALIZACION_PASSWORD,
-                HORA_ACTUALIZACION_PASSWORD,
-                FECHA_CREACION,
-                HORA_CREACION,
-                FECHA_ACTUALIZACION,
-                HORA_ACTUALIZACION
-            FROM DISPOSITIVOS
-            WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'
-        `;
-
+        let queryBaseConsultarDispositivos = `
+                SELECT
+                    ID_DISPOSITIVO,
+                    TOKEN,
+                    MARCA,
+                    REFERENCIA,
+                    LATITUD,
+                    LONGITUD,
+                    ID_MICROSERVICIO,
+                    NOMBRE_MICROSERVICIO,
+                    EMAIL_RESPONSABLE,
+                    PASSWORD_ACTIVA,
+                    DISPOSITIVO_ACTIVO,
+                    FECHA_ACTUALIZACION_PASSWORD,
+                    HORA_ACTUALIZACION_PASSWORD,
+                    FECHA_CREACION,
+                    HORA_CREACION,
+                    FECHA_ACTUALIZACION,
+                    HORA_ACTUALIZACION
+                FROM DISPOSITIVOS
+            `;
+            
+        queryBaseConsultarDispositivos = data.microservicio_interes === 'GLOBAL' ?  queryBaseConsultarDispositivos : `${queryBaseConsultarDispositivos} WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes}' `;
+        
         const queryConsultarDispositivos = consultaDinamica(
             queryBaseConsultarDispositivos,
             data.seleccionar,
@@ -212,6 +219,10 @@ module.exports={
     actualizar_dispositivo_byId: (data, callBack) => {
 
         data.email = data.email.toLowerCase();
+
+        if(data.nombre_microservicio != data.microservicio_interes && data.microservicio_interes != 'GLOBAL' ){
+            return callback(`El nombre del microservicio: ${data.nombre_microservicio} no coincide con el microservicio de interes: ${data.microservicio_interes}`, null, false);
+        }
 
         const queryConsutarExistenciaDispositivo = `
             SELECT 
@@ -247,7 +258,10 @@ module.exports={
                                 DISPOSITIVO_ACTIVO = ?,
                                 FECHA_ACTUALIZACION = CURDATE(),
                                 HORA_ACTUALIZACION = CURTIME()
-                        WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes} and ID_DISPOSITIVO = ?`;
+                        WHERE ID_DISPOSITIVO = ?
+                    `;
+
+                    queryActualizarDispositivo = data.microservicio_interes === 'GLOBAL' ?  queryActualizarDispositivo : `${queryActualizarDispositivo} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}' `;
 
                     let arrayParams = [
                         data.marca,
@@ -302,9 +316,11 @@ module.exports={
 
                 }else if (result.length > 0){
 
-                    const queryEliminarUsuarioById = `
-                        DELETE FROM DISPOSITIVOS WHERE NOMBRE_MICROSERVICIO = '${data.microservicio_interes} and ID_DISPOSITIVO = ?
+                    let queryEliminarUsuarioById = `
+                        DELETE FROM DISPOSITIVOS WHERE ID_DISPOSITIVO = ?
                     `;
+
+                    queryEliminarUsuarioById = data.microservicio_interes === 'GLOBAL' ?  queryEliminarUsuarioById : `${queryEliminarUsuarioById} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}' `;
 
                     pool.query(
                         queryEliminarUsuarioById,
