@@ -138,7 +138,7 @@ module.exports={
                                                 data.email_responsable,
                                                 'Creación dispositivo ResCity',
                                                 `Apreciado usuario ResCity: ${resultDeviceToJson.NOMBRES} ${resultDeviceToJson.APELLIDOS}, se ha registrado un dispositivo bajo su 
-                                                responsabilidad, por favor cambiar la contraseña del dispositivo usando esta contraseña inicial: ${passWordAletoriaEncrypted}. 
+                                                responsabilidad, por favor cambiar la contraseña del dispositivo usando esta contraseña inicial: ${passWordAletoria}. 
                                                 El token del dispositivo es: ${jsonTokenDispositivo}. Recuerde que la contraseña y el token pueden ser cambiados cuando el 
                                                 usuario lo desee. el ID del dispositivo, el token y la contraseña son necesarias para para el envío de datos.`,
                                                 (result) => {
@@ -218,7 +218,7 @@ module.exports={
     },
     actualizar_dispositivo_byId: (data, callBack) => {
 
-        data.email = data.email.toLowerCase();
+        data.email_responsable = data.email_responsable.toLowerCase();
 
         if(data.nombre_microservicio != data.microservicio_interes && data.microservicio_interes != 'GLOBAL' ){
             return callback(`El nombre del microservicio: ${data.nombre_microservicio} no coincide con el microservicio de interes: ${data.microservicio_interes}`, null, false);
@@ -338,6 +338,40 @@ module.exports={
             }
         )
     },
+    validar_estado_contrasena: (data, callback) => {
+        
+        const queryConsutarExistenciaDispositivo = `
+            SELECT 
+                ID_DISPOSITIVO,
+                PASSWORD_ACTIVA,
+                PASSWORD_AUTENTICACION
+            FROM DISPOSITIVOS 
+            WHERE 
+                ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
+        `;
+
+        pool.query(
+            queryConsutarExistenciaDispositivo,
+            [data.id_dispositivo, data.email_responsable],
+            (error, resultDevice) => {
+                
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+
+                if (resultDevice.length > 0){
+
+                    const resultDeviceToJson = JSON.parse(JSON.stringify(resultDevice))[0];
+
+                    if(resultDeviceToJson.PASSWORD_ACTIVA === 0 && resultDeviceToJson.PASSWORD_AUTENTICACION === null){
+                        return callback(null, true, true);
+                    }else{
+                        return callback(null, false, true);
+                    }
+                }
+            }
+        )
+    },
     solicitar_cambio_contrasena: (data, callback) => { 
 
         const queryConsutarExistenciaDispositivo = `
@@ -417,17 +451,25 @@ module.exports={
     },
     actualizar_contrasena: (data, callback) => { 
 
-        const queryConsutarExistenciaDispositivo = `
+        data.email_responsable = data.email_responsable.toLowerCase();
+
+        
+        if(data.nombre_microservicio != data.microservicio_interes && data.microservicio_interes != 'GLOBAL' ){
+            return callback(`El nombre del microservicio: ${data.nombre_microservicio} no coincide con el microservicio de interes: ${data.microservicio_interes}`, null, false);
+        }
+        
+        let queryConsutarExistenciaDispositivo = `
             SELECT 
-                * 
+            * 
             FROM DISPOSITIVOS 
-            WHERE 
-                ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
+            WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
         `;
+        
+        queryConsutarExistenciaDispositivo = data.microservicio_interes === 'GLOBAL' ? `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'`;
 
         pool.query(
             queryConsutarExistenciaDispositivo,
-            [data.id_dispositivo, data.id_dispositivo, data.email_responsable],
+            [data.id_dispositivo, data.email_responsable],
             (error, resultDevice) => {
 
                 if (error){
@@ -441,9 +483,15 @@ module.exports={
                 }else if(resultDevice.length > 0){
 
                     const device = JSON.parse(JSON.stringify(resultDevice))[0];
+                    
+                    let result = false;
 
-                    const result = compareSync(data.old_password, device.PASSWORD);
-
+                    if (device.PASSWORD_ACTIVA === 0) {
+                        result = compareSync(data.old_password, device.PASSWORD);
+                    }else if (device.PASSWORD_ACTIVA === 1){
+                        result = compareSync(data.old_password, device.PASSWORD_AUTENTICACION);
+                    }
+                
                     if(result){
 
                         const salt = genSaltSync(10);
@@ -459,25 +507,28 @@ module.exports={
                             });
 
 
-                        const queryActualizarDispositivoCambioContrasena = `
+                        let queryActualizarDispositivoCambioContrasena = `
                             UPDATE DISPOSITIVOS
                                 SET 
                                     PASSWORD_ACTIVA = true,
                                     PASSWORD_AUTENTICACION = ?,
                                     FECHA_ACTUALIZACION_PASSWORD = CURDATE(),
                                     HORA_ACTUALIZACION_PASSWORD = CURTIME()
-                                WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?`;
+                            WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
+                        `;
+
+                        queryActualizarDispositivoCambioContrasena = data.microservicio_interes === 'GLOBAL' ? `${queryActualizarDispositivoCambioContrasena} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryActualizarDispositivoCambioContrasena} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'`
 
                         pool.query(
                             queryActualizarDispositivoCambioContrasena,
                             [data.password_auth, data.id_dispositivo, data.email_responsable],
                             (error, result) => {
-                                
+
                                 if (error) {
                                     return callback(`The device with ID_DISPOSITIVO: ${data.id_dispositivo} can not update the password`, null, false);
                                 }else{
                                     sendEmail(
-                                        data.email,
+                                        data.email_responsable,
                                         'Cambio contraseña dispositivo ResCity',
                                         `Apreciado usuario ResCity, la contraseña del dispositivo with ID: ${data.id_dispositivo} ha sido actualizada correctamente. A partir de este momento puede publicar datos si el dispositivo esta activado por el administrador de la plataforma.`,
                                         (result) => {
@@ -492,7 +543,7 @@ module.exports={
                             }
                         )
                     }else {
-                        return callback(`The the old password does not match with the temporal password saved for the ID_DISPOSITIVO: ${data.id_dispositivo}`, null, true)
+                        return callback(`The the old password does not match with the temporal password saved for the ID_DISPOSITIVO: ${data.id_dispositivo}`, null, false)
                     }
                 }
             }

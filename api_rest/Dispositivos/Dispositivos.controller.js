@@ -2,7 +2,9 @@ const {
     crear_dispositivo,  
     consultar_dispositivos,
     actualizar_dispositivo_byId,
-    eliminar_dispositivo_byId
+    eliminar_dispositivo_byId,
+    validar_estado_contrasena,
+    actualizar_contrasena
 } = require('./Dispositivos.service');
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
@@ -142,21 +144,7 @@ module.exports = {
                 statusCode: 500,
                 message: errorData.mensaje_retornado
             })
-        }
-
-        const salt = genSaltSync(10);
-        
-        if(body.password !== null){
-            const encriptPass = new Promise((resolve, reject)=>{
-                body.password = hashSync(body.password,salt)
-                resolve()
-            })
-            encriptPass
-                .then()
-                .catch((err)=>{
-                    console.log(err);
-                });
-        }
+        }  
 
         actualizar_dispositivo_byId(body, (err, result, state) => {
 
@@ -219,6 +207,101 @@ module.exports = {
                 success: state,
                 statusCode:200,
                 message: `The device with ID_DISPOSITIVO: ${body.id_dispositivo} was successfully deleted`
+            });
+        });
+    },
+    validarEstadoContrasena: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
+            id_dispositivo: true,
+            email_responsable: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        validar_estado_contrasena(body, (err, result, state) => {
+
+            if(state === false){
+                return res.status(403).json({
+                    success: state, 
+                    statusCode: 403,
+                    message: "Database get error - error in validarEstadoContrasena",
+                    return: err
+                });
+            }
+
+            return res.status(200).json({
+                success: state,
+                statusCode: 200,
+                invalidPassword: result
+            });
+        });
+    },
+    actualizarContrasena: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
+            id_dispositivo: true,
+            email_responsable: true,
+            nombre_microservicio: true,
+            old_password: true,
+            password_auth: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        actualizar_contrasena(body, (err, result, state) => {
+
+            if(state === false){
+                return res.status(403).json({
+                    success: state, 
+                    statusCode: 403,
+                    message: "Database post error - error in actualizarcontrasena",
+                    return: err
+                });
+            }
+
+            return res.status(200).json({
+                success: state,
+                statusCode:200,
+                message: `The password updadte for device: ${body.id_dispositivo} has been finished`
             });
         });
     },

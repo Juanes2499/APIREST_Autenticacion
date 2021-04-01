@@ -2,7 +2,9 @@ const {
     crearDispositivo,
     consultarDispositivos,
     actualizarDispositivoById,
-    eliminarDispositivoById
+    eliminarDispositivoById,
+    validarEstadoContrasena,
+    actualizarContrasena,
 } = require('./Dispositivos.controller');
 
 const {
@@ -15,6 +17,8 @@ router.post("/", crearDispositivo);
 router.post("/get", consultarDispositivos);
 router.put("/", actualizarDispositivoById),
 router.post("/delete", eliminarDispositivoById);
+router.post("/validarEstadoContrasena", validarEstadoContrasena);
+router.post("/actualizarContrasena", actualizarContrasena);
 
 //Adicionales
 router.post('/microservicios/get', consultarMicroservicioDinamico);
