@@ -7,12 +7,12 @@ hooks:
   ApplicationStop:
     - location: scripts_deploy_test_aws/application_stop.sh
       timeout: 300
-      runas: ubuntu
+      runas: ec2-user
   BeforeInstall:
     - location: scripts_deploy_test_aws/before_install.sh
       timeout: 300
-      runas: ubuntu
+      runas: ec2-user
   ApplicationStart:
     - location: scripts_deploy_test_aws/application_start.sh
       timeout: 300
-      runas: ubuntu
+      runas: ec2-user
