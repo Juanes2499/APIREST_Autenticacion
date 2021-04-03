@@ -9,10 +9,10 @@ permissions:
    owner: ubuntu
    group: ubuntu
 hooks:
-  ApplicationStop:
-    - location: scripts_deploy_test_aws/application_stop.sh
-      timeout: 300
-      runas: ubuntu
+  # ApplicationStop:
+  #   - location: scripts_deploy_test_aws/application_stop.sh
+  #     timeout: 300
+  #     runas: ubuntu
   BeforeInstall:
     - location: scripts_deploy_test_aws/before_install.sh
       timeout: 300
