@@ -543,7 +543,7 @@ module.exports={
                             }
                         )
                     }else {
-                        return callback(`The the old password does not match with the temporal password saved for the ID_DISPOSITIVO: ${data.id_dispositivo}`, null, false)
+                        return callback(`The the old password does not match with th password saved for the ID_DISPOSITIVO: ${data.id_dispositivo}`, null, false)
                     }
                 }
             }
