@@ -4,7 +4,7 @@
 sudo chmod -R 777 /home/ubuntu/API_Auth
 
 #navigate into our working directory where we have all our github files
-cd /home/ubuntu/express-app
+cd /home/ubuntu/API_Auth
 
 #add npm and node to path
 export NVM_DIR="$HOME/.nvm"	
