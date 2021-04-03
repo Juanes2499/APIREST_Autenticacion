@@ -1,5 +1,5 @@
 version: 0.0
-os: linux
+os: ubuntu
 files:
   - source: /
     destination: /home/ubuntu/API_Auth
@@ -10,14 +10,14 @@ permissions:
    group: ubuntu
 hooks:
   ApplicationStop:
-    - location: scripts_deploy_test_aws/application_stop.sh
+    - location: scripts/application_stop.sh
       timeout: 300
       runas: ubuntu
   BeforeInstall:
-    - location: scripts_deploy_test_aws/before_install.sh
+    - location: scripts/before_install.sh
       timeout: 300
       runas: ubuntu
   ApplicationStart:
-    - location: scripts_deploy_test_aws/application_start.sh
+    - location: scripts/application_start.sh
       timeout: 300
       runas: ubuntu
