@@ -1,18 +1,19 @@
 const {
-    crear_configuracionRol,
-    consultar_configuraciRoles_dinamico,
-    eliminar_configuracionRol_ByID,
-} = require('./configuracionRoles.service');
+    crear_configuracionUsuarios,
+    consultar_configuracionUsuario_dinamico,
+    eliminar_configuracionUsuario_ByID,
+} = require('./configuracionUsuarios.service');
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
-    crearConfiguracionRol: (req, res) => {
+    crearConfiguracionUsuarios: (req,res)=>{
 
         const body = req.body;
 
         const parametrosEndpoint = {
             email: true,
-            nombre_rol: true,
+            nombre_microservicio: true,
+            nombre_modulo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -32,24 +33,26 @@ module.exports = {
             })
         }
         
-        crear_configuracionRol(body, (err, result, state)=>{
-            if(err){
+        crear_configuracionUsuarios(body, (err, result, state)=>{
+
+            if(state === false){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - crearConfiguracionRol",
+                    message: "Database create error - crearConfiguracionUsuarios",
                     return: err
                 })
             }
+
             return res.status(201).json({
                 success: state,
                 statusCode:201,
-                message: `The register with EMAIL: ${body.email} and NOMBRE_ROL: ${body.nombre_rol} was successfully created`,
+                message: `The register with EMAIL: ${body.email} and NOMBRE_MICROSERVICIO: ${body.nombre_microservicio} and NOMBRE_MODULO: ${body.nombre_modulo} was successfully created`,
               });
         });
     },
-    consultarConfiguraciRolesDinamico: (req, res) => {
+    consultarConfiguracionUsuarioDinamico: (req, res) => {
 
         const body = req.body;
 
@@ -77,12 +80,12 @@ module.exports = {
             })
         }
 
-        consultar_configuraciRoles_dinamico(body, (err, result, state) => {
+        consultar_configuracionUsuario_dinamico(body, (err, result, state) => {
             if (state === false) {
                 console.log(err);
                 return res.status(500).json({
                     success:state,
-                    message: "Database get error - error in consultarConfiguraciRolesDinamico",
+                    message: "Database get error - error in consultarConfiguracionUsuarioDinamico",
                     return: err
                 })
             }
@@ -94,12 +97,12 @@ module.exports = {
             });
         });
     },
-    eliminarConfiguracionRolByID: (req, res) => {
+    eliminarConfiguracionUsuarioByID: (req, res) => {
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            id_configuracion_roles: true,
+            id_configuracion_usuario: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -119,14 +122,13 @@ module.exports = {
             })
         }
 
-        eliminar_configuracionRol_ByID(body, (err, result, state) => {
+        eliminar_configuracionUsuario_ByID(body, (err, result, state) => {
 
             if(state === false){
-                console.log(err);
                 return res.status(403).json({
                     success: state, 
                     statusCode: 403,
-                    message: "Database delete error - error in eliminarConfiguracionRolByID",
+                    message: "Database delete error - error in eliminarConfiguracionUsuarioByID",
                     return: err
                 });
             }
@@ -134,7 +136,7 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_CONFIGURACION_ROLES: ${body.id_configuracion_roles} was successfully deleted`
+                message: `The user configuration with ID_CONFIGURACION_USUARIO: ${body.id_configuracion_usuario} was successfully deleted`
             });
         });
     }

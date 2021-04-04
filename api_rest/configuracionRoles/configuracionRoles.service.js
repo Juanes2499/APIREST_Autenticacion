@@ -1,15 +1,27 @@
 const pool = require("../../config/database");
+const consultaDinamica = require("../../shared/consultaDinamica");
 
 module.exports = {
     crear_configuracionRol: (data, callback) => {
-        pool.query(
-            `
+        
+        data.email = data.email.toLowerCase();
+        data.nombre_rol = data.nombre_rol.toUpperCase();
+
+        const queryVerificarExistenciaUsuarioRol =  `
             SELECT 
-                (SELECT COUNT(*) FROM USER WHERE ID_USER = ?) USER_EXIST,
-                (SELECT COUNT(*) FROM ROLES WHERE ID_ROL = ?) ROL_EXIST
-            FROM DUAL `,
-            [data.id_user, data.id_rol],
+                (SELECT COUNT(*) FROM USUARIOS WHERE EMAIL = ?) USER_EXIST,
+                (SELECT COUNT(*) FROM ROLES WHERE NOMBRE_ROL = ?) ROL_EXIST
+            FROM DUAL
+        `;
+
+        pool.query(
+            queryVerificarExistenciaUsuarioRol,
+            [data.email, data.nombre_rol],
             (error, result) => {
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
 
                 const resultToJson = JSON.parse(JSON.stringify(result))[0];
 
@@ -17,34 +29,50 @@ module.exports = {
                 const rolExist = parseInt(resultToJson.ROL_EXIST);
 
                 if (userExist === 0 && rolExist ===0){
-                    return callback(`The user with ID_USER: ${data.id_user} and role with ID_ROL: ${data.id_rol} were not found`, null, false);
+                    return callback(`The user with EMAIL: ${data.email} and role with NOMBRE_ROL: ${data.nombre_rol} were not found`, null, false);
                 }else if(userExist === 0){
-                    return callback(`The user with ID_USER: ${data.id_user} was not found`, null, false);
+                    return callback(`The user with EMAIL: ${data.email} was not found`, null, false);
                 }else if(rolExist === 0){
-                    return callback(`The role with ID_ROL: ${data.id_rol} was not found`, null, false);
+                    return callback(`The role with NOMBRE_ROL: ${data.nombre_rol} was not found`, null, false);
                 }else if(userExist > 0 && rolExist > 0){
                     
-                    pool.query(
-                        `
+                    const queryValidarExistenciaConfiguracion = `
                         SELECT * FROM CONFIGURACION_ROLES
-                            WHERE ID_USER = ? AND ID_ROL = ? `,
-                        [data.id_user, data.id_rol],
+                        WHERE EMAIL = ? AND NOMBRE_ROL = ? 
+                    `;
+
+                    pool.query(
+                        queryValidarExistenciaConfiguracion,
+                        [data.email, data.nombre_rol],
                         (error, result) => {
+
+                            if (error){
+                                return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                            }
+
                             if(result.length > 0){
-                                return callback(`The role configuration with ID_USER: ${data.id_user} and ID_ROL: ${data.id_rol} already exist`, null, false);
+
+                                return callback(`The role configuration with EMAIL: ${data.email} and NOMBRE_ROL: ${data.nombre_rol} already exist`, null, false);
+                            
                             }else if(result.length === 0){
-                                pool.query(
-                                    `
+
+                                const queryCerarConfiguracion = `
                                     INSERT
                                         INTO CONFIGURACION_ROLES
-                                        (ID_USER, ID_ROL, FECHA_CREACION, HORA_CREACION)
+                                        (ID_CONFIGURACION_ROLES, ID_USUARIO, EMAIL, ID_ROL, NOMBRE_ROL, FECHA_CREACION, HORA_CREACION)
                                     VALUES 
-                                        (?, ?, CURDATE(), CURTIME()) `,
-                                    [data.id_user, data.id_rol],
+                                        (UUID(), (SELECT ID_USUARIO FROM USUARIOS WHERE EMAIL = ?), ?, (SELECT ID_ROL FROM ROLES WHERE NOMBRE_ROL = ?), ?, CURDATE(), CURTIME())
+                                `
+
+                                pool.query(
+                                    queryCerarConfiguracion,
+                                    [data.email, data.email, data.nombre_rol, data.nombre_rol],
                                     (error, result) => {
+
                                         if(error){
-                                            return callback(`The role configuration with ID_USER: ${data.id_user} and ID_ROL: ${data.id_rol} could not be created`, null, false);
+                                            return callback(`The role configuration with EMAIL: ${data.email} and NOMBRE_ROL: ${data.nombre_rol} could not be created`, null, false);
                                         }
+
                                         return callback(null, result, true);
                                     }
                                 )
@@ -55,135 +83,98 @@ module.exports = {
             }
         )
     },
-    consultar_rolesAsiganadosUsuarios: (callback) => {
-        pool.query(
-            `
+    consultar_configuraciRoles_dinamico: (data, callback) => {
+        
+        const queryBaseConsultarConfiguracion = `
             SELECT 
-                CR.ID_CONFIGURACION,
-                U.ID_USER,
+                CR.ID_CONFIGURACION_ROLES,
+                U.ID_USUARIO ,
                 U.NOMBRES, 
                 U.APELLIDOS, 
-                U.TIPO_DOC_ID, 
-                U.NUMERO_DOC_ID, 
+                U.EMAIL,
                 CR.ID_ROL, 
-                (SELECT 
-                    NOMBRE_ROL 
-                FROM ROLES R 
-                WHERE ID_ROL = CR.ID_ROL) NOMBRE_ROL, 
+                CR.NOMBRE_ROL, 
                 (SELECT 
                     DETALLES 
                 FROM ROLES R 
                 WHERE ID_ROL = CR.ID_ROL) DETALLES_ROL, 
                 U.FECHA_CREACION, 
                 U.HORA_CREACION
-            FROM USER U 
+            FROM USUARIOS U 
             INNER JOIN 
                 CONFIGURACION_ROLES CR 
-                ON U.ID_USER = CR.ID_USER `,
+                ON U.ID_USUARIO = CR.ID_USUARIO
+        `;
+
+        const queryConsultarConfiguracion = consultaDinamica(
+            queryBaseConsultarConfiguracion,
+            data.seleccionar,
+            data.condicion,
+            data.agrupar,
+            data.ordenar
+        );
+
+        if(queryConsultarConfiguracion.query == null && queryConsultarConfiguracion.error === true){
+            return callback(queryConsultarConfiguracion.message, null, false);
+        }
+
+        pool.query(
+            queryConsultarConfiguracion.query,
             [],
             (error, result) => {
-                if(error){
-                    return callback(error, null, false);
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
                 }
+
+                if(result.length === 0){
+                    return callback(`There is/are no record(s) for role configuration with the parameter(s) set`, null, false);
+                }
+
                 return callback(null, result, true);
             }
         )
     },
-    consultar_rolesAsiganadosUsuarios_ByNombreRol: (data, callback) => {
-        data.nombre_rol = data.nombre_rol.toUpperCase();
-        pool.query(
-            `
-            SELECT 
-                CR.ID_CONFIGURACION,
-                U.ID_USER,
-                U.NOMBRES, 
-                U.APELLIDOS, 
-                U.TIPO_DOC_ID, 
-                U.NUMERO_DOC_ID, 
-                CR.ID_ROL, 
-                (SELECT 
-                    NOMBRE_ROL 
-                FROM ROLES R 
-                WHERE ID_ROL = CR.ID_ROL) NOMBRE_ROL, 
-                (SELECT 
-                    DETALLES 
-                FROM ROLES R 
-                WHERE ID_ROL = CR.ID_ROL) DETALLES_ROL, 
-                U.FECHA_CREACION, 
-                U.HORA_CREACION
-            FROM USER U 
-            INNER JOIN 
-                CONFIGURACION_ROLES CR 
-                ON U.ID_USER = CR.ID_USER
-            WHERE 
-                ID_ROL = (SELECT ID_ROL FROM ROLES R WHERE R.NOMBRE_ROL = ?) `,
-            [data.nombre_rol],
-            (error, result) => {
-                if(result.length === 0){
-                    return callback(`The registers with nombre_rol: ${data.nombre_rol} were not found`, null, false);
-                }else if(result.length > 0){
-                    return callback(null, result, true);
-                }
-            }
-        )
-    },
-    consultar_rolesAsiganadosUsuarios_ByEmail: (data, callback) => {
-        data.email = data.email.toLowerCase();
-        pool.query(
-            `
-            SELECT 
-                CR.ID_CONFIGURACION,
-                U.ID_USER,
-                U.NOMBRES, 
-                U.APELLIDOS, 
-                U.TIPO_DOC_ID, 
-                U.NUMERO_DOC_ID, 
-                CR.ID_ROL, 
-                (SELECT 
-                    NOMBRE_ROL 
-                FROM ROLES R 
-                WHERE ID_ROL = CR.ID_ROL) NOMBRE_ROL, 
-                (SELECT 
-                    DETALLES 
-                FROM ROLES R 
-                WHERE ID_ROL = CR.ID_ROL) DETALLES_ROL, 
-                U.FECHA_CREACION, 
-                U.HORA_CREACION
-            FROM USER U 
-            INNER JOIN 
-                CONFIGURACION_ROLES CR 
-                ON U.ID_USER = CR.ID_USER
-            WHERE 
-                U.EMAIL = ? `,
-            [data.email],
-            (error, result) => {
-                if(result.length === 0){
-                    return callback(`The register with email: ${data.nombre_rol} was not found`, null, false);
-                }else if(result.length > 0){
-                    return callback(null, result, true);
-                }
-            }
-        )
-    },
     eliminar_configuracionRol_ByID: (data, callback) => {
+
+        const queryValidarExistenciaConfiguracion = `
+            SELECT * FROM CONFIGURACION_ROLES
+            WHERE ID_CONFIGURACION_ROLES = ? 
+        `;
+
         pool.query(
-            `
-            SELECT * FROM CONFIGURACION_ROLES 
-                WHERE ID_CONFIGURACION = ? `,
-            [data.id_configuracion],
+            queryValidarExistenciaConfiguracion,
+            [data.id_configuracion_roles],
             (error, result) => {
+                
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+
                 if(result.length === 0){
-                    return callback(`The register with ID_CONFIGURACION: ${data.id_configuracion} was not found`, null, false);
+
+                    return callback(`The register with ID_CONFIGURACION_ROLES: ${data.id_configuracion_roles} was not found`, null, false);
+
                 }else if (result.length > 0){
-                    pool.query(
-                        `
+
+                    const queryEliminarConfiguracion = `
                         DELETE FROM CONFIGURACION_ROLES 
-                            WHERE ID_CONFIGURACION = ? `,
-                        [data.id_configuracion],
+                        WHERE ID_CONFIGURACION_ROLES = ? 
+                    `
+
+                    pool.query(
+                        queryEliminarConfiguracion,
+                        [data.id_configuracion_roles],
                         (error, result) => {
-                            if(error){
-                                return callback(`The register with ID_CONFIGURACION: ${data.id_configuracion} could not be deleted`, null, false);
+                            
+                            if (error){
+                                return callback(`There is/are error(s), please contact with the administrator`, null, false);
                             }
+
+                            if(error){
+                                return callback(`The register with ID_CONFIGURACION_ROLES: ${data.id_configuracion_roles} could not be deleted`, null, false);
+                            }
+
                             return callback(null, null, true);
                         }
                     )

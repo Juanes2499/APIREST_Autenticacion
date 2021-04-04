@@ -1,4 +1,4 @@
-const configuracionRolesRouter = require('./configuracionRoles.router');
+const microservicioRouter = require('./microservicio.router');
 
 const express = require('express');
 const userAuth = express();
@@ -21,20 +21,20 @@ userAuth.use("/", (req, res)=>{
                 let moduloPermiso  = false;
 
                 try{
-                    moduloPermiso = req.decoded.ROLES.ROL_SUPER_USUARIO || req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_CONFIGURACION_ROLES;
+                    moduloPermiso = req.decoded.ROLES.ROL_SUPER_USUARIO || req.decoded.PERMISOS.MS_AUTENTICACION_NS.MOD_MICROSERVICIOS;
                 }catch{
                     moduloPermiso  = false;
                 }
-                
+
                 if(moduloPermiso){
-                    configuracionRolesRouter(req,res);
+                    microservicioRouter(req,res);
                 }
 
                 else{
                     return res.status(500).json({
                         success:false,
                         statusCode:500,
-                        message: "The User has not access to role configuration module"
+                        message: "The User has not access to microservices module"
                     })
                 }
             }

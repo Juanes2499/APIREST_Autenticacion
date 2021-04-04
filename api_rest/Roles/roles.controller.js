@@ -1,103 +1,138 @@
 const {
     crear_rol,
-    consultar_roles,
-    consultar_roles_ByNombreRol,
-    actualizar_rol_ByID,
+    consultar_rolesDinamico,
     eliminar_rol_ByID,
 } = require('./roles.service');
+const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
     crearRol: (req, res) => {
+        
         const body = req.body;
-        crear_rol(body, (err, result, state) => {
+
+        const parametrosEndpoint = {
+            nombre_rol: true,
+            detalles: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+        
+        crear_rol(body, (err, result, state)=>{
             if(err){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - error in crearRol",
+                    message: "Database create error - crearRol",
                     return: err
                 })
             }
             return res.status(201).json({
-                success:state,
-                statusCode:201,
-                message: `The role: ${body.nombre_rol} was successfully created`
-            })
-        })
-    },
-    consultarRoles: (req, res) => {
-        consultar_roles((err, result, state) => {
-            if(err){
-                console.log(err);
-                return res.status(403).json({
-                    success:state,
-                    statusCode:403,
-                    message: "Database get error - error in consultarRoles"
-                })
-            }
-            return res.status(200).json({
                 success: state,
-                statusCode: 200,
-                data:result
-            })
-        })
+                statusCode:201,
+                message: `The register with NOMBRE_ROL: ${body.nombre_rol} was successfully created`,
+              });
+        });
     },
-    consultarRolByNombreRol: (req, res) => {
+    consultarRolesDinamico: (req, res) => {
         const body = req.body;
-        consultar_roles_ByNombreRol(body, (err, result, state) => {
-            if(state === false){
-                return res.status(403).json({
-                    success: state, 
-                    statusCode: 403,
-                    message: "Database get error - error in consultarRolByNombreRol",
+
+        const parametrosEndpoint = {
+            seleccionar: true,
+            condicion: true,
+            agrupar: true,
+            ordenar: true,   
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        consultar_rolesDinamico(body, (err, result, state) => {
+            if (state === false) {
+                console.log(err);
+                return res.status(500).json({
+                    success:state,
+                    message: "Database get error - error in consultarRolesDinamico",
                     return: err
-                });
-            }else if(result.length > 0){
-                return res.status(200).json({
-                    success: state,
-                    statusCode: 200,
-                    data:result
                 })
             }
-        })
-    },
-    actualizarRolByID: (req, res) => {
-        const body = req.body;
-        actualizar_rol_ByID(body, (err, result, state) => {
-            if(state === false){
-                console.log(err);
-                return res.status(403).json({
-                    success: state, 
-                    statusCode: 403,
-                    message: "Database put error - error in actualizarRolByID",
-                    return: err
-                });
-            }
+
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The role with ID_ROL: ${body.id_rol} was successfully updated`
+                data: result
             });
-        })
+        });
     },
     eliminarRolByID: (req, res) => {
         const body = req.body;
+
+        const parametrosEndpoint = {
+            id_rol: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
         eliminar_rol_ByID(body, (err, result, state) => {
+
             if(state === false){
-                console.log(err);
                 return res.status(403).json({
-                    success:state,
-                    statusCode:403,
+                    success: state, 
+                    statusCode: 403,
                     message: "Database delete error - error in eliminarRolByID",
                     return: err
                 });
             }
+
             return res.status(200).json({
                 success: state,
-                statusCode: 200,
-                message: `The node sensor with ID: ${body.id_rol} was successfully deleted`
-            })
-        })
+                statusCode:200,
+                message: `The microservice with ID_ROL: ${body.id_rol} was successfully deleted`
+            });
+        });
     }
 }

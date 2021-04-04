@@ -1,18 +1,24 @@
 const {
-    crear_configuracionRol,
-    consultar_configuraciRoles_dinamico,
-    eliminar_configuracionRol_ByID,
-} = require('./configuracionRoles.service');
+    crear_modulo,
+    consultar_moduloDinamico,
+    actualizar_modulo_ByID,
+    eliminar_modulo_byId
+} = require('./modulo.service');
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
-    crearConfiguracionRol: (req, res) => {
+    crearModulo: (req,res)=>{
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            email: true,
-            nombre_rol: true,
+            nombre_modulo: true,
+            detalles: true,
+            url_modulo: true,
+            alias_modulo: true,
+            url_alias_modulo: true,
+            icon_modulo: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -32,24 +38,25 @@ module.exports = {
             })
         }
         
-        crear_configuracionRol(body, (err, result, state)=>{
-            if(err){
+        crear_modulo(body, (err, result, state)=>{
+            if(state === false){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - crearConfiguracionRol",
+                    message: "Database create error - crearModulo",
                     return: err
                 })
             }
+
             return res.status(201).json({
                 success: state,
                 statusCode:201,
-                message: `The register with EMAIL: ${body.email} and NOMBRE_ROL: ${body.nombre_rol} was successfully created`,
+                message: `The register with NOMBRE_MODULO: ${body.nombre_modulo} was successfully created`,
               });
         });
     },
-    consultarConfiguraciRolesDinamico: (req, res) => {
+    consultarModuloDinamico: (req, res) => {
 
         const body = req.body;
 
@@ -77,12 +84,12 @@ module.exports = {
             })
         }
 
-        consultar_configuraciRoles_dinamico(body, (err, result, state) => {
+        consultar_moduloDinamico(body, (err, result, state) => {
             if (state === false) {
                 console.log(err);
                 return res.status(500).json({
                     success:state,
-                    message: "Database get error - error in consultarConfiguraciRolesDinamico",
+                    message: "Database get error - error in consultarModuloDinamico",
                     return: err
                 })
             }
@@ -94,12 +101,19 @@ module.exports = {
             });
         });
     },
-    eliminarConfiguracionRolByID: (req, res) => {
-
+    actualizarModuloByID: (req, res) => {
+        
         const body = req.body;
 
         const parametrosEndpoint = {
-            id_configuracion_roles: true,
+            id_modulo: true,
+            nombre_modulo: true,
+            detalles: true,
+            url_modulo: true,
+            alias_modulo: true,
+            url_alias_modulo: true,
+            icon_modulo: true,
+            orden: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -119,14 +133,14 @@ module.exports = {
             })
         }
 
-        eliminar_configuracionRol_ByID(body, (err, result, state) => {
+        actualizar_modulo_ByID(body, (err, result, state) => {
 
             if(state === false){
                 console.log(err);
                 return res.status(403).json({
                     success: state, 
                     statusCode: 403,
-                    message: "Database delete error - error in eliminarConfiguracionRolByID",
+                    message: "Database put error - error in actualizarModuloByID",
                     return: err
                 });
             }
@@ -134,7 +148,50 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_CONFIGURACION_ROLES: ${body.id_configuracion_roles} was successfully deleted`
+                message: `The module with ID_MODULO: ${body.id_modulo} was successfully updated`
+            });
+        });
+    },
+    eliminarModuloById: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            id_modulo: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        eliminar_modulo_byId(body, (err, result, state) => {
+
+            if(state === false){
+                return res.status(403).json({
+                    success: state, 
+                    statusCode: 403,
+                    message: "Database delete error - error in eliminarModuloById",
+                    return: err
+                });
+            }
+
+            return res.status(200).json({
+                success: state,
+                statusCode:200,
+                message: `The module with ID_MODULO: ${body.id_modulo} was successfully deleted`
             });
         });
     }

@@ -1,18 +1,18 @@
 const {
-    crear_configuracionRol,
-    consultar_configuraciRoles_dinamico,
-    eliminar_configuracionRol_ByID,
-} = require('./configuracionRoles.service');
+    crear_configuracioMicroservicioModulo,
+    consultar_configuracioMicroservicioModulo_dinamico,
+    eliminar_configuracioMicroservicioModulo_ByID
+} = require('./configuracionMicroservicioModulo.service');
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
 
 module.exports = {
-    crearConfiguracionRol: (req, res) => {
+    crearConfiguracioMicroservicioModulo: (req,res)=>{
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            email: true,
-            nombre_rol: true,
+            nombre_microservicio: true,
+            nombre_modulo: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -32,24 +32,25 @@ module.exports = {
             })
         }
         
-        crear_configuracionRol(body, (err, result, state)=>{
-            if(err){
+        crear_configuracioMicroservicioModulo(body, (err, result, state)=>{
+            if(state === false){
                 console.log(err);
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - crearConfiguracionRol",
+                    message: "Database create error - crearConfiguracioMicroservicioModulo",
                     return: err
                 })
             }
+
             return res.status(201).json({
                 success: state,
                 statusCode:201,
-                message: `The register with EMAIL: ${body.email} and NOMBRE_ROL: ${body.nombre_rol} was successfully created`,
+                message: `The register with NOMBRE_MICROSERVICIO ${body.nombre_microservicio} and NOMBRE_MODULO: ${body.nombre_modulo} was successfully created`,
               });
         });
     },
-    consultarConfiguraciRolesDinamico: (req, res) => {
+    consultarConfiguracioMicroservicioModuloDinamico: (req, res) => {
 
         const body = req.body;
 
@@ -77,12 +78,12 @@ module.exports = {
             })
         }
 
-        consultar_configuraciRoles_dinamico(body, (err, result, state) => {
+        consultar_configuracioMicroservicioModulo_dinamico(body, (err, result, state) => {
             if (state === false) {
                 console.log(err);
                 return res.status(500).json({
                     success:state,
-                    message: "Database get error - error in consultarConfiguraciRolesDinamico",
+                    message: "Database get error - error in consultarConfiguracioMicroservicioModuloDinamico",
                     return: err
                 })
             }
@@ -94,12 +95,12 @@ module.exports = {
             });
         });
     },
-    eliminarConfiguracionRolByID: (req, res) => {
+    eliminarConfiguracioMicroservicioModuloByID: (req, res) => {
 
         const body = req.body;
 
         const parametrosEndpoint = {
-            id_configuracion_roles: true,
+            id_configuracion: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);
@@ -119,14 +120,13 @@ module.exports = {
             })
         }
 
-        eliminar_configuracionRol_ByID(body, (err, result, state) => {
+        eliminar_configuracioMicroservicioModulo_ByID(body, (err, result, state) => {
 
             if(state === false){
-                console.log(err);
                 return res.status(403).json({
                     success: state, 
                     statusCode: 403,
-                    message: "Database delete error - error in eliminarConfiguracionRolByID",
+                    message: "Database delete error - error in eliminarConfiguracioMicroservicioModuloByID",
                     return: err
                 });
             }
@@ -134,7 +134,7 @@ module.exports = {
             return res.status(200).json({
                 success: state,
                 statusCode:200,
-                message: `The microservice with ID_CONFIGURACION_ROLES: ${body.id_configuracion_roles} was successfully deleted`
+                message: `The microservice module configuration with ID_CONFIGURACION: ${body.id_configuracion} was successfully deleted`
             });
         });
     }
