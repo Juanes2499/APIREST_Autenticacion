@@ -49,8 +49,8 @@ if(auth === "true"){
     const configuracionRolesRouter = require('../configuracionRoles/configuracionRoles.router');
     
     generalRouters.use("/login", login);
-    generalRouters.use("/usuarios", deviceRouter);
-    generalRouters.use("/dispositivos", deviceAuth);
+    generalRouters.use("/usuarios", userRouter);
+    generalRouters.use("/dispositivos", deviceRouter);
     generalRouters.use("/microservicios", microservicoRouter);
     generalRouters.use("/modulos", moduloRouter);
     generalRouters.use("/configuracion_microservicio_modulos", configuracionMicroservicioModuloRouter);
