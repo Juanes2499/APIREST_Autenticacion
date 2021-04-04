@@ -374,13 +374,15 @@ module.exports={
     },
     solicitar_cambio_contrasena: (data, callback) => { 
 
-        const queryConsutarExistenciaDispositivo = `
+        let queryConsutarExistenciaDispositivo = `
             SELECT 
                 * 
             FROM DISPOSITIVOS 
             WHERE 
                 ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
         `;
+
+        queryConsutarExistenciaDispositivo = data.microservicio_interes === 'GLOBAL' ?  `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}' `;
 
         pool.query(
             queryConsutarExistenciaDispositivo,
@@ -422,6 +424,8 @@ module.exports={
                                 HORA_ACTUALIZACION_PASSWORD = CURTIME()
                             WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?`;
 
+                    queryActualizarDispositivoCambioContrasena = data.microservicio_interes === 'GLOBAL' ?  `${queryActualizarDispositivoCambioContrasena} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryActualizarDispositivoCambioContrasena} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}' `;
+                            
                     pool.query(
                         queryActualizarDispositivoCambioContrasena,
                         [passWordAletoriaEncrypted,data.id_dispositivo,data.email_responsable],
@@ -431,9 +435,9 @@ module.exports={
                                 return callback(`The device with ID_DISPOSITIVO: ${data.id_dispositivo} can not update the password`, null, false);
                             }else{
                                 sendEmail(
-                                    data.email,
-                                    'Recuperación contraseña dispositivo ResCity',
-                                    `Apreciado usuario ResCity, Ha solicitado recuperar la contraseña del dispositivo. Por favor ingresar a la plataforma ResCity Core, al servicio Autenticación, al módulo Dispositivos y con la siguiente contraseña temporal: ${passWordAletoria} realice la actuliazación del dispositivo. Durante este periodo su el dispositivo permanece inactivo hasta que realice el cambio de contraseña. Si presenta algun tipo de inconveniente comunicarse con el administrador de la plataforma. Muchas gracias.`,
+                                    data.email_responsable,
+                                    `Recuperación contraseña dispositivo con ID: ${device.ID_DISPOSITIVO} ResCity`,
+                                    `Apreciado usuario ResCity, Ha solicitado recuperar la contraseña del dispositivo con ID: ${device.ID_DISPOSITIVO}. Por favor ingresar a la plataforma ResCity Core, al servicio Autenticación, al módulo Dispositivos y con la siguiente contraseña temporal: ${passWordAletoria} realice la actuliazación de la contraseña del dispositivo. Durante este periodo el dispositivo permanece inactivo hasta que realice el cambio de contraseña. Si presenta algun tipo de inconveniente comunicarse con el administrador de la plataforma. Muchas gracias.`,
                                     (result) => {
                                         if(result === false) {
                                             return callback('Email could not be sended', null, false)
@@ -548,5 +552,95 @@ module.exports={
                 }
             }
         )
-    }
+    },
+    actualizar_token_dispositivo: (data, callback)=>{
+        
+        data.email_responsable = data.email_responsable.toLowerCase();
+
+        if(data.nombre_microservicio != data.microservicio_interes && data.microservicio_interes != 'GLOBAL' ){
+            return callback(`El nombre del microservicio: ${data.nombre_microservicio} no coincide con el microservicio de interes: ${data.microservicio_interes}`, null, false);
+        }
+
+        let queryConsutarExistenciaDispositivo = `
+            SELECT 
+            * 
+            FROM DISPOSITIVOS 
+            WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ?
+        `;
+        
+        queryConsutarExistenciaDispositivo = data.microservicio_interes === 'GLOBAL' ? `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryConsutarExistenciaDispositivo} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'`;
+
+        pool.query(
+            queryConsutarExistenciaDispositivo,
+            [data.id_dispositivo, data.email_responsable],
+            (error, resultDevice) => {
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+
+                if(resultDevice.length === 0){
+
+                    return callback(`The device with ID: ${data.id_dispositivo} was not found`, null, false);
+
+                }else if (resultDevice.length > 0){
+
+                    const resultDeviceToJson = JSON.parse(JSON.stringify(resultDevice))[0];
+
+                    const key = process.env.TOKEN_KEY.toString();
+                    const expiresInDispositivo = parseInt(process.env.TOKEN_EXPIRE_IN_DISPOSITIVO);
+
+                    const payloald = {
+                        marca: data.marca,
+                        referencia: data.referencia,
+                        latitud: data.latitud,
+                        longitud: data.longitud,
+                        nombre_microservicio: data.nombre_microservicio,
+                        email_responsable: data.email_responsable,
+                    }
+                    
+                    const jsonTokenDispositivo = sign(payloald, key, {
+                        expiresIn: expiresInDispositivo,
+                    });
+
+                    let queryActualizarTokenDispositivo = `
+                        UPDATE DISPOSITIVOS
+                            SET TOKEN = ?
+                        WHERE ID_DISPOSITIVO = ? AND EMAIL_RESPONSABLE = ? 
+                    `;
+
+                    queryActualizarTokenDispositivo = data.microservicio_interes === 'GLOBAL' ? `${queryActualizarTokenDispositivo} AND NOMBRE_MICROSERVICIO = '${data.nombre_microservicio}'` : `${queryActualizarTokenDispositivo} AND NOMBRE_MICROSERVICIO = '${data.microservicio_interes}'`
+
+                    pool.query(
+                        queryActualizarTokenDispositivo,
+                        [
+                            jsonTokenDispositivo,
+                            data.id_dispositivo,
+                            data.email_responsable
+                        ],
+                        (error, result) =>{
+
+                            if(error){
+                                return callback(`There is/are error(s), please contact with the administrator`, null, false)
+                            }else{
+                                sendEmail(
+                                    data.email_responsable,
+                                    `Cambio token dispositivo: ${data.id_dispositivo} ResCity`,
+                                    `Apreciado usuario ResCity, se ha solicitado el cambio de token para el dipositivo con ID: ${data.id_dispositivo}
+                                    El token del dispositivo es: ${jsonTokenDispositivo}`,
+                                    (result) => {
+                                        if(result === false) {
+                                            return callback('Email could not be sended', null, false)
+                                        }else{
+                                            return callback(null, null, true)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    );
+                }
+            }
+        )
+    },
 }

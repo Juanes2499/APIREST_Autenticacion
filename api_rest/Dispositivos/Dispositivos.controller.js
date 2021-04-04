@@ -4,7 +4,9 @@ const {
     actualizar_dispositivo_byId,
     eliminar_dispositivo_byId,
     validar_estado_contrasena,
-    actualizar_contrasena
+    solicitar_cambio_contrasena,
+    actualizar_contrasena,
+    actualizar_token_dispositivo
 } = require('./Dispositivos.service');
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 const {MensajeverificarParametrosJson} = require("../../shared/verificarParametrosJson");
@@ -256,6 +258,53 @@ module.exports = {
             });
         });
     },
+    solicitarCambioContrasena: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
+            id_dispositivo: true,
+            email_responsable: true,
+            nombre_microservicio: true
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        solicitar_cambio_contrasena(body, (err, result, state) => {
+
+            if(state === false){
+                return res.status(403).json({
+                    success: state, 
+                    statusCode: 403,
+                    message: "Database post error - error in solicitarCambioContrasena",
+                    return: err
+                });
+            }
+
+            return res.status(200).json({
+                success: state,
+                statusCode: 200,
+                invalidPassword: result
+            });
+        });
+    },
     actualizarContrasena: (req, res) => {
 
         const body = req.body;
@@ -303,6 +352,58 @@ module.exports = {
                 statusCode:200,
                 message: `The password updadte for device: ${body.id_dispositivo} has been finished`
             });
+        });
+    },
+    actualizarTokenDispositivo: (req,res)=>{
+
+        const body = req.body;
+
+        const parametrosEndpoint = {
+            microservicio_interes: true,
+            modulo_interes: true,
+            id_dispositivo: true,
+            marca: true,
+            referencia: true,
+            latitud: true,
+            longitud: true,   
+            nombre_microservicio: true,
+            email_responsable: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+        
+        actualizar_token_dispositivo(body, (err, result, state)=>{
+
+            if(err){
+                console.log(err);
+                return res.status(500).json({
+                    success:state,
+                    statusCode:500,
+                    message: "Database create error - actualizarTokenDispositivo",
+                    return: err
+                })
+            }
+
+            return res.status(201).json({
+                success: state,
+                statusCode:201,
+                message: `The token for the device with ID: ${body.id_dispositivo} was successfully updated`,
+              });
         });
     },
 }
