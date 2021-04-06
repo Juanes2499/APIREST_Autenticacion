@@ -1,4 +1,4 @@
-const deviceRouterOpen = require('./Dispositivos.router.open');
+const deviceRouterOpen = require('./DispositivosGlobal.router');
 
 const express = require('express');
 const userAuth = express();

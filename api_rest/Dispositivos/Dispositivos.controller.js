@@ -19,12 +19,16 @@ module.exports = {
         const parametrosEndpoint = {
             microservicio_interes: true,
             modulo_interes: true,
+            uuid: true,
+            token: true,
             marca: true,
             referencia: true,
             latitud: true,
             longitud: true,   
             nombre_microservicio: true,
             email_responsable: true,
+            fecha_creacion: true, 
+            hora_creacion: true,
         };
         
         const arrayParametrosJsonComparar = Object.keys(body);

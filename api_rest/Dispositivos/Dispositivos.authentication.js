@@ -1,4 +1,5 @@
 const deviceRouter = require('./Dispositivos.router');
+const deviceGlobalRouter = require("./DispositivosGlobal.router");
 const pool = require("../../config/database");
 
 const express = require('express');
@@ -32,7 +33,15 @@ deviceAuth.use("/", (req, res)=>{
                     }
     
                     if(moduloPermiso){
-                        deviceRouter(req,res);
+                        try {
+                            deviceGlobalRouter(req,res);
+                        }catch{
+                            return res.status(500).json({
+                                success:false,
+                                statusCode:500,
+                                message: "The User in the service authentication in the module devices can't create, modify or delete something, only can read."
+                            })
+                        }
                     }else{
                         return res.status(500).json({
                             success:false,

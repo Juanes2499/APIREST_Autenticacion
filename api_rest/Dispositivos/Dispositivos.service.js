@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const base64url = require("base64url");
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 module.exports={
     crear_dispositivo: (data, callback)=>{
@@ -60,22 +61,32 @@ module.exports={
                                 return callback(`The microservice with NOMBRE_MICROSERVICIO: ${data.nombre_microservicio} was not found`, null, false);
                             }else if(microservicioExist > 0 ){
 
-                                const key = process.env.TOKEN_KEY.toString();
-                                const expiresInDispositivo = parseInt(process.env.TOKEN_EXPIRE_IN_DISPOSITIVO);
+                                // const key = process.env.TOKEN_KEY.toString();
+                                // const expiresInDispositivo = parseInt(process.env.TOKEN_EXPIRE_IN_DISPOSITIVO);
 
-                                const payloald = {
-                                    marca: data.marca,
-                                    referencia: data.referencia,
-                                    latitud: data.latitud,
-                                    longitud: data.longitud,
-                                    nombre_microservicio: data.nombre_microservicio,
-                                    email_responsable: data.email_responsable,
-                                }
+                                // const payloald = {
+                                //     marca: data.marca,
+                                //     referencia: data.referencia,
+                                //     latitud: data.latitud,
+                                //     longitud: data.longitud,
+                                //     nombre_microservicio: data.nombre_microservicio,
+                                //     email_responsable: data.email_responsable,
+                                // }
                                 
-                                const jsonTokenDispositivo = sign(payloald, key, {
-                                    expiresIn: expiresInDispositivo,
-                                });
+                                // const jsonTokenDispositivo = sign(payloald, key, {
+                                //     expiresIn: expiresInDispositivo,
+                                // });
                                 
+                                jwt.verify(data.token, process.env.TOKEN_KEY_DEVICES, (err, decoded) => {      
+                                    if (err) {
+                                        return res.status(500).json({
+                                            success:false,
+                                            statusCode:500,
+                                            message: "Invalid device token"
+                                        })  
+                                    }
+                                })
+
                                 let passWordAletoriaEncrypted = '';
                                 let passWordAletoria = base64url(crypto.randomBytes(15));
                                 const salt = genSaltSync(10);
@@ -83,6 +94,7 @@ module.exports={
                                     passWordAletoriaEncrypted = hashSync(passWordAletoria,salt)
                                     resolve()
                                 })
+
 
                                 const queryCrearUsuario = `
                                     INSERT 
@@ -101,7 +113,7 @@ module.exports={
                                             HORA_CREACION
                                         )
                                     VALUES (
-                                        UUID(),
+                                        ?,
                                         ?,
                                         ?,
                                         ?,
@@ -111,15 +123,16 @@ module.exports={
                                         ?,
                                         ?,
                                         ?, 
-                                        CURDATE(), 
-                                        CURTIME()
+                                        ?, 
+                                        ?
                                     )
                                 `;
 
                                 pool.query(
                                     queryCrearUsuario,
                                     [
-                                        jsonTokenDispositivo,
+                                        data.uuid,
+                                        data.token,
                                         data.marca,
                                         data.referencia,
                                         data.latitud,
@@ -127,7 +140,9 @@ module.exports={
                                         data.nombre_microservicio,
                                         data.nombre_microservicio,
                                         data.email_responsable,
-                                        passWordAletoriaEncrypted
+                                        passWordAletoriaEncrypted,
+                                        data.fecha_creacion,
+                                        data.hora_creacion
                                     ],
                                     (error, result) =>{
 
@@ -139,7 +154,7 @@ module.exports={
                                                 'Creación dispositivo ResCity',
                                                 `Apreciado usuario ResCity: ${resultDeviceToJson.NOMBRES} ${resultDeviceToJson.APELLIDOS}, se ha registrado un dispositivo bajo su 
                                                 responsabilidad, por favor cambiar la contraseña del dispositivo usando esta contraseña inicial: ${passWordAletoria}. 
-                                                El token del dispositivo es: ${jsonTokenDispositivo}. Recuerde que la contraseña y el token pueden ser cambiados cuando el 
+                                                El token del dispositivo es: ${data.token}. Recuerde que la contraseña y el token pueden ser cambiados cuando el 
                                                 usuario lo desee. el ID del dispositivo, el token y la contraseña son necesarias para para el envío de datos.`,
                                                 (result) => {
                                                     if(result === false) {

@@ -32,7 +32,7 @@ if(auth === "true"){
     const deviceAuthOpen = require('../Dispositivos/Dispositivos.authentication.open');
 
     generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenAuth);
-    generalRouters.use("/dispositivos_open", deviceAuthOpen);
+    //generalRouters.use("/dispositivos_open", deviceAuthOpen);
     
 }else if (auth === "false"){
 
@@ -63,7 +63,7 @@ if(auth === "true"){
     const deviceRouterOpen = require('../Dispositivos/Dispositivos.router.open');
 
     generalRouters.use("/configuracion_microservicio_modulos_open", configuracionMicroservicioModuloOpenRouter);
-    generalRouters.use("/dispositivos_open", deviceRouterOpen);
+    //generalRouters.use("/dispositivos_open", deviceRouterOpen);
 }
 
 module.exports = generalRouters;
