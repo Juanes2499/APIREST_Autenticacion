@@ -366,6 +366,7 @@ module.exports = {
             microservicio_interes: true,
             modulo_interes: true,
             id_dispositivo: true,
+            token: true,
             marca: true,
             referencia: true,
             latitud: true,
@@ -398,7 +399,7 @@ module.exports = {
                 return res.status(500).json({
                     success:state,
                     statusCode:500,
-                    message: "Database create error - actualizarTokenDispositivo",
+                    message: "Database put error - actualizarTokenDispositivo",
                     return: err
                 })
             }
