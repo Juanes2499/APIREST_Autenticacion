@@ -1,7 +1,8 @@
 const {
     autenticar_ByEmail,
     solicitar_cambio_contrasena,
-    actualizar_contrasena
+    actualizar_contrasena,
+    autenticar_dispositivo,
 } = require('./login.service');
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
@@ -172,6 +173,93 @@ module.exports ={
                 statusCode:200,
                 message: `The password updadte for EMAIL:  ${body.email} has been finished`
             });
+        });
+    },
+    loginDispositivo: (req, res) => {
+
+        const body = req.body;
+
+        const parametrosEndpoint = {  
+            id_dispositivo: true,
+            token: true,  
+            nombre_microservicio: true,
+        };
+        
+        const arrayParametrosJsonComparar = Object.keys(body);
+        
+        const verificarParametro = MensajeverificarParametrosJson(parametrosEndpoint, arrayParametrosJsonComparar)
+
+        if(verificarParametro.error === true || verificarParametro.messageFaltantes != null || verificarParametro.messageMalEscritos != null ){
+            
+            const errorData = {
+                mensaje_retornado: `${verificarParametro.messageFaltantes}, please set up all required parameters`
+            }
+
+            return res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: errorData.mensaje_retornado
+            })
+        }
+
+        autenticar_dispositivo(body, (err, results, state) => {
+
+            if (err) {
+                return res.status(401).json({
+                    success: state,
+                    statusCode: 401,
+                    message: 'Database login error - error in loginDispositivo',
+                    return: err,
+                });
+            }
+
+            if (!results) {
+                return res.status(401).json({
+                    success: state,
+                    statusCode: 401,
+                    message: 'Database login error - error in loginDispositivo',
+                    return: err,
+                });
+            }
+
+            if (state) {
+                
+                const payloald = results;
+
+                const key = process.env.TOKEN_KEY_DEVICES.toString();
+                const expiresIn = parseInt(process.env.TOKEN_EXPIRE_IN_DISPOSITIVO);
+
+                const jsontoken = sign(payloald, key, {
+                    expiresIn: expiresIn,
+                });
+
+                let date =  new Date();
+                let anoExpedicion = date.getFullYear();
+                let mesExpedicion = date.getMonth()+1;
+                let diaExpedicion = date.getDate();
+                let horaExpedicion = date.getHours();
+                let minutosExpedicion = date.getMinutes();
+
+                if(minutosExpedicion.toString().length === 1){
+                    minutosExpedicion = `0${minutosExpedicion}`;
+                }
+
+                let fechaHoraExpedicion = `${anoExpedicion}/${mesExpedicion}/${diaExpedicion} - ${horaExpedicion}:${minutosExpedicion}`;
+
+                return res.json({
+                    success: state,
+                    statusCode:200,
+                    message: "login successfully",
+                    token: jsontoken,
+                    expedicion_token: fechaHoraExpedicion,
+                });
+            } else {
+                return res.status(401).json({
+                    success: state,
+                    statusCode: 401,
+                    message: "Invalid ID dispositivo, token or nombre microservicio",
+                });
+            }
         });
     },
 }

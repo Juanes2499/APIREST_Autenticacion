@@ -3,6 +3,8 @@ const sendEmail = require("../../shared/sendEmail");
 const crypto = require("crypto");
 const base64url = require("base64url");
 const { hashSync, genSaltSync, compareSync } = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { decode } = require("punycode");
 
 module.exports ={
     autenticar_ByEmail: (data, callback) => {
@@ -351,6 +353,57 @@ module.exports ={
                         )
                     }else {
                         return callback(`The the old password does not match with the temporal password saved for the EMAIL: ${data.email}`, null, true)
+                    }
+                }
+            }
+        )
+    },
+    autenticar_dispositivo: (data, callback) => {
+        
+        const queryConsultarDispositivo = `
+            SELECT 
+                ID_DISPOSITIVO,
+                TOKEN,
+                MARCA,
+                REFERENCIA,
+                NOMBRE_MICROSERVICIO,
+                EMAIL_RESPONSABLE,
+                DISPOSITIVO_ACTIVO
+            FROM DISPOSITIVOS
+            WHERE ID_DISPOSITIVO = ? AND NOMBRE_MICROSERVICIO = ?
+        `;
+
+        pool.query(
+            queryConsultarDispositivo,
+            [data.id_dispositivo, data.nombre_microservicio],
+            (error, resultDevice) => {
+
+                if (error){
+                    return callback(`There is/are error(s), please contact with the administrator`, null, false);
+                }
+
+                if(resultDevice.length === 0){
+                    return callback(`The device with ID ${data.id_dispositivo} was not found`, null, false);
+                }else if(resultDevice.length > 0){
+
+                    const resultDeviceToJson = JSON.parse(JSON.stringify(resultDevice))[0];
+
+                    if(resultDeviceToJson.TOKEN === data.token) console.log(true)
+
+                    if(resultDeviceToJson.TOKEN === data.token){
+                        if (resultDeviceToJson.DISPOSITIVO_ACTIVO){
+                            jwt.verify(resultDeviceToJson.TOKEN, process.env.TOKEN_KEY_DEVICES, (err, decoded) => {
+                                if(err){
+                                    return callback(`the token for the device with ID ${data.id_dispositivo} is not valid`, null, false);
+                                }else{
+                                    return callback(null, resultDeviceToJson, true);
+                                }
+                            })
+                        }else{
+                            return callback(`The device with ID ${data.id_dispositivo} is not active`, null, false); 
+                        }
+                    }else {
+                        return callback(`The device with ID ${data.id_dispositivo} could not verified`, null, false); 
                     }
                 }
             }
