@@ -388,8 +388,6 @@ module.exports ={
 
                     const resultDeviceToJson = JSON.parse(JSON.stringify(resultDevice))[0];
 
-                    if(resultDeviceToJson.TOKEN === data.token) console.log(true)
-
                     if(resultDeviceToJson.TOKEN === data.token){
                         if (resultDeviceToJson.DISPOSITIVO_ACTIVO){
                             jwt.verify(resultDeviceToJson.TOKEN, process.env.TOKEN_KEY_DEVICES, (err, decoded) => {
